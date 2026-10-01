@@ -10,6 +10,7 @@ ERROR  a relative Markdown link that points at a file that does not exist
 WARN   CLAUDE.md over 200 lines (Anthropic's guidance)
 WARN   status-type sections (Now / Next / Done / In Progress / Blockers) outside STATUS.md
 WARN   legacy doc files that should be folded (see the project-docs skill)
+Paths listed in an optional .doc-check-ignore (one prefix per line) are skipped, e.g. backups.
 """
 import pathlib, re, sys
 
@@ -42,8 +43,17 @@ def headings(text):
             yield line.strip()
 
 
+def ignored_prefixes(root):
+    """Extra frozen paths from an optional .doc-check-ignore (one path prefix per line, # comments)."""
+    f = root / ".doc-check-ignore"
+    if not f.exists():
+        return ()
+    return tuple(l.strip().rstrip("/") + "/" for l in f.read_text().splitlines() if l.strip() and not l.startswith("#"))
+
+
 def check(root):
     errors, warns = [], []
+    frozen = FROZEN_DIRS + ignored_prefixes(root)
     status = root / "STATUS.md"
     if not status.exists():
         errors.append("STATUS.md is missing (it is the home of the goal, current state and next steps)")
@@ -56,7 +66,7 @@ def check(root):
             errors.append("STATUS.md: the first section must be '## End Goal'")
 
     for p, rel in md_files(root):
-        if rel.startswith(FROZEN_DIRS):
+        if rel.startswith(frozen):
             continue
         text = p.read_text(encoding="utf-8", errors="ignore")
         hs = list(headings(text))

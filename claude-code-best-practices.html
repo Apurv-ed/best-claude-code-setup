@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Best Practices - Save Tokens, Work Faster</title>
+<style>
+  @page { size: A4; margin: 1.5cm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: #fff;
+  }
+
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+    border-bottom: 3px solid #d4a574;
+    margin-bottom: 30px;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.5px; }
+  .header .subtitle { font-size: 16px; color: #666; margin-top: 8px; }
+
+  h2 {
+    font-size: 20px;
+    color: #d4a574;
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+  }
+
+  p { margin: 8px 0; font-size: 14px; }
+
+  .tip {
+    background: #faf7f4;
+    border-left: 4px solid #d4a574;
+    padding: 14px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    page-break-inside: avoid;
+  }
+  .tip .label {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1a1a2e;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .tip p { margin: 4px 0; font-size: 13px; color: #444; }
+
+  .impact {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .impact.high { background: #e8f5e9; color: #2e7d32; }
+  .impact.medium { background: #fff3e0; color: #e65100; }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: #f5f0eb;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #c7254e;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #faf7f4;
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    border-bottom: 2px solid #d4a574;
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) { background: #fafafa; }
+
+  .callout {
+    background: #fff8e1;
+    border: 1px solid #ffcc02;
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .quick-ref {
+    background: #f0f4f8;
+    border: 1px solid #d0d8e0;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+  .quick-ref h3 { margin-top: 0; font-size: 15px; color: #333; }
+  .quick-ref ul { padding-left: 18px; }
+  .quick-ref li { font-size: 13px; margin: 4px 0; }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+  }
+  .footer a { color: #888; text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  .page-break { page-break-before: always; }
+  ul { padding-left: 20px; }
+  ul li { font-size: 14px; margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Claude Code Best Practices</h1>
+  <p class="subtitle">Habits that save tokens and get better results</p>
+</div>
+
+<p>Your setup already includes optimized settings. This guide covers the <strong>habits and commands</strong> that make the biggest difference in day-to-day use. Bookmark this page for reference.</p>
+
+<div class="callout">
+  <strong>The one thing to remember:</strong> Every message you send carries your entire conversation history. Longer conversations = more expensive messages. Keep sessions short and focused.
+</div>
+
+<!-- ============================================================ -->
+<h2>1. Session Habits</h2>
+
+<div class="tip">
+  <span class="label">Keep sessions short <span class="impact high">High Impact</span></span>
+  <p>Token cost accelerates as conversations grow. By message 30, a single prompt costs ~167,000 tokens because the entire history is re-sent. Start fresh sessions for new tasks. A series of short sessions is dramatically cheaper than one long marathon.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Use handoff before context gets high <span class="impact high">High Impact</span></span>
+  <p>Watch the context percentage in your status bar. When it reaches around 50%, type <code>handoff</code>. Claude saves everything to a file. Then type <code>/exit</code> and start fresh with <code>ccx</code>. Your next session picks up exactly where you left off.</p>
+  <p><strong>Why not wait?</strong> When context gets too full, Claude automatically compresses the conversation, which can lose important details about your work. A clean handoff preserves everything perfectly.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Never resume old sessions <span class="impact high">High Impact</span></span>
+  <p>Resuming a day-old conversation forces Claude to re-process the entire history at full price (the cache has expired). Multiple users reported losing 20-28% of their usage on a single resumed message. Start a new session instead.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Use /btw for side questions <span class="impact medium">Medium Impact</span></span>
+  <p>The <code>/btw</code> command asks a question in a popup that <strong>never enters your conversation history</strong>. Perfect for quick questions like "what does this error mean?" without bloating your context. Can reduce usage by up to 50% in question-heavy sessions.</p>
+</div>
+
+<div class="tip">
+  <span class="label">If Claude seems confused, start fresh <span class="impact medium">Medium Impact</span></span>
+  <p>After 2-3 failed attempts at the same fix, type <code>/clear</code> and write a better prompt that includes what you learned. A clean session with a good prompt beats a bloated session with accumulated confusion.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 class="page-break">2. Writing Better Prompts</h2>
+
+<div class="tip">
+  <span class="label">Be as specific as you can</span>
+  <p>When possible, point Claude to the specific file or area. For example, "the login page crashes when I leave email empty" is better than "something is broken". If you know the file name, even better: "Fix the bug in src/login.js". The more specific you are, the fewer tokens Claude uses searching.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Paste errors, don't describe them</span>
+  <p>Copy-paste the actual error message or output. Your description loses details Claude needs and costs extra tokens for less information.</p>
+</div>
+
+<div class="tip">
+  <span class="label">One task at a time</span>
+  <p>Instead of "fix the login bug and also add a signup page and update the database schema", break it into separate requests. Each focused prompt gets better results and uses fewer tokens.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2>3. Model Selection</h2>
+
+<p>Claude Code can use different models. Matching the model to the task saves significant tokens.</p>
+
+<table>
+  <tr><th>Model</th><th>Best For</th><th>Relative Cost</th></tr>
+  <tr>
+    <td><strong>Haiku</strong></td>
+    <td>File lookups, search, renaming, formatting</td>
+    <td>1x (cheapest)</td>
+  </tr>
+  <tr>
+    <td><strong>Sonnet</strong></td>
+    <td>Daily coding, tests, simple edits</td>
+    <td>~2x</td>
+  </tr>
+  <tr>
+    <td><strong>Opus</strong></td>
+    <td>Complex architecture, subtle debugging</td>
+    <td>~4x</td>
+  </tr>
+</table>
+
+<p>Type <code>/model sonnet</code> or <code>/model opus</code> to switch mid-session. Pro and Max plans now start on Opus. For everyday work, <code>/model sonnet</code> is usually enough. Switch to Opus only when you genuinely need deep reasoning.</p>
+
+<p>If a task is straightforward and you want even faster responses, type <code>/effort low</code>. For hard problems, type <code>ultrathink</code> in your message for one-off deep reasoning.</p>
+
+<!-- ============================================================ -->
+<h2>4. Commands Quick Reference</h2>
+
+<div class="quick-ref">
+  <h3>Essential</h3>
+  <ul>
+    <li><code>ccx</code> - Start Claude Code with the safe, optimized wrapper</li>
+    <li><code>handoff</code> - Save your progress so the next session picks up where you left off</li>
+    <li><code>/btw</code> - Ask a side question without adding to conversation history</li>
+    <li><code>Escape</code> - Stop Claude mid-action and redirect</li>
+  </ul>
+</div>
+
+<div class="quick-ref">
+  <h3>Useful</h3>
+  <ul>
+    <li><code>/clear</code> - Wipe conversation and start fresh (when Claude is confused)</li>
+    <li><code>/context</code> - See how your token budget is being used</li>
+    <li><code>/usage</code> - See your usage and plan limits (<code>/cost</code> does the same)</li>
+    <li><code>/model [name]</code> - Switch model (sonnet, opus, haiku)</li>
+    <li><code>/effort [level]</code> - Adjust reasoning depth (low, medium, high, xhigh, max)</li>
+    <li><code>/rewind</code> - Undo: roll code and conversation back to an earlier point (or press Escape twice with an empty prompt)</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2>5. What NOT to Do</h2>
+
+<div class="tip">
+  <span class="label">Don't resume old sessions</span>
+  <p>The cache expires after inactivity. Resuming reprocesses everything at full price. Start a new session instead.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Don't wait for context to fill up</span>
+  <p>Type <code>handoff</code> at 50%. Don't wait for Claude to auto-compress your conversation - compression loses details.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Don't use Opus for everything</span>
+  <p>Opus costs about 4x more per token than Haiku and 2x more than Sonnet. Most coding tasks work perfectly fine on Sonnet.</p>
+</div>
+
+<div class="tip">
+  <span class="label">Don't keep iterating in a broken session</span>
+  <p>After 2-3 failed attempts, <code>/clear</code> and start over with a better prompt. Cheaper and usually more effective.</p>
+</div>
+
+<div class="footer">
+  <p>Based on official Anthropic documentation and community best practices. Last updated September 2026.</p>
+  <p><a href="index.html">Back to setup</a></p>
+</div>
+
+</body>
+</html>

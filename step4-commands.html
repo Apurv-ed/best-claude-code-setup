@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Setup - Step 4</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #4a7c59;
+    width: 66.67%;
+  }
+
+  .step-counter {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  .content {
+    flex: 1;
+    margin-bottom: 40px;
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  .instruction {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .command-item {
+    background: #faf7f4;
+    border-left: 4px solid #d4a574;
+    padding: 14px 16px;
+    margin: 14px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .command-name {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: inline-block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .command-description {
+    font-size: 13px;
+    color: #444;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .note {
+    background: #f0f8ff;
+    border-left: 4px solid #4a7c59;
+    padding: 12px 14px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: #1a1a2e;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 30px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .back-link {
+    font-size: 13px;
+    color: #999;
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: #666;
+  }
+
+  .next-button {
+    background: #4a7c59;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s;
+  }
+  .next-button:hover {
+    background: #3a6349;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
+
+  <div class="step-counter">Step 4 of 6</div>
+
+  <div class="content">
+    <h1>Commands You'll Use Every Day</h1>
+
+    <p class="instruction">You don't need to memorize these. Just know they exist and bookmark this page for reference.</p>
+
+    <div class="command-item">
+      <div class="command-name">ccx</div>
+      <div class="command-description">Start Claude Code. Use this instead of "claude" for the safe, optimized version.</div>
+    </div>
+
+    <div class="command-item">
+      <div class="command-name">/btw</div>
+      <div class="command-description">Quick side question without using tokens from your main task. Ask something fast, get an answer, stay focused.</div>
+    </div>
+
+    <div class="command-item">
+      <div class="command-name">Escape</div>
+      <div class="command-description">Stop Claude in the middle and redirect. If Claude is going the wrong way, press Escape and rephrase.</div>
+    </div>
+
+    <div class="command-item">
+      <div class="command-name">handoff</div>
+      <div class="command-description">Save progress when you're done for the day. Creates a summary so you pick up exactly where you left off next time.</div>
+    </div>
+
+    <div class="note">
+      Most of these you'll pick up naturally. The key ones to remember: <span style="font-family: 'SF Mono', monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">ccx</span> to start, and <span style="font-family: 'SF Mono', monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">handoff</span> to save your work.
+    </div>
+
+    <div style="background: #fff8e1; border: 1px solid #ffcc02; padding: 16px; border-radius: 6px; margin-top: 20px;">
+      <strong style="font-size: 14px;">Understanding context usage</strong>
+      <p style="font-size: 13px; margin: 8px 0 0;">The status bar at the bottom shows your context usage as a percentage. Think of it as how full your conversation is. As you work, it fills up.</p>
+      <p style="font-size: 13px; margin: 8px 0 0;"><strong>When it reaches around 50%, type <span style="font-family: 'SF Mono', monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">handoff</span></strong>. Claude saves everything to a file so your next session picks up exactly where you left off. Then type <span style="font-family: 'SF Mono', monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">/exit</span> and start fresh with <span style="font-family: 'SF Mono', monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">ccx</span>.</p>
+      <p style="font-size: 13px; margin: 8px 0 0;"><strong>Do not wait for it to fill up completely.</strong> When context gets too full, Claude automatically compresses the conversation to make room. This compression can lose important details about what you were working on, leading to mistakes and repeated work. A clean handoff at 50% preserves everything perfectly.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="step3-plugins.html" class="back-link">Back</a>
+    <a href="step5-tips.html" class="next-button">Next</a>
+  </div>
+
+</body>
+</html>

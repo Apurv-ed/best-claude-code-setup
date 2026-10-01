@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Setup - Step 5</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #4a7c59;
+    width: 83.33%;
+  }
+
+  .step-counter {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  .content {
+    flex: 1;
+    margin-bottom: 40px;
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  .intro {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .tip-item {
+    background: #faf7f4;
+    border-left: 4px solid #d4a574;
+    padding: 14px 16px;
+    margin: 14px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .tip-number {
+    font-weight: 700;
+    color: #96652e;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .tip-text {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.5;
+  }
+
+  .example-prompt {
+    background: #f5f0eb;
+    border-left: 2px solid #d4a574;
+    padding: 8px 12px;
+    margin: 8px 0;
+    border-radius: 0 3px 3px 0;
+    font-size: 12px;
+    color: #444;
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .highlight {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  .impact-note {
+    background: #f0f8ff;
+    border-left: 4px solid #4a7c59;
+    padding: 12px 14px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: #1a1a2e;
+    font-weight: 600;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 30px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .back-link {
+    font-size: 13px;
+    color: #999;
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: #666;
+  }
+
+  .next-button {
+    background: #4a7c59;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s;
+  }
+  .next-button:hover {
+    background: #3a6349;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
+
+  <div class="step-counter">Step 5 of 6</div>
+
+  <div class="content">
+    <h1>Tips That Save You Money</h1>
+
+    <p class="intro">The top 5 habits that reduce your Claude Code usage by 50%:</p>
+
+    <div class="tip-item">
+      <div class="tip-number">Tip 1: Keep sessions under 30 messages</div>
+      <div class="tip-text">Start fresh often. A new session costs less than resuming an old one. Once you hit 20 - 30 messages, type <span class="highlight">handoff</span> and <span class="highlight">/exit</span>, then start a new <span class="highlight">ccx</span> session.</div>
+    </div>
+
+    <div class="tip-item">
+      <div class="tip-number">Tip 2: Never resume old sessions</div>
+      <div class="tip-text">Always start a fresh session for new work. Old sessions accumulate context that wastes tokens. Use <span class="highlight">handoff</span> to save what you need, then start fresh.</div>
+    </div>
+
+    <div class="tip-item">
+      <div class="tip-number">Tip 3: Use /btw for side questions</div>
+      <div class="tip-text">Need a quick answer without derailing your task? Type <span class="highlight">/btw</span> "your quick question". This doesn't add to your conversation history, so it saves tokens.</div>
+    </div>
+
+    <div class="tip-item">
+      <div class="tip-number">Tip 4: Be specific in prompts</div>
+      <div class="tip-text">When possible, point Claude to the specific file or area. For example, "the login page crashes when I leave email empty" is better than "something is broken". If you know the file name, even better: "Fix the bug in src/login.js". The more specific you are, the fewer tokens Claude uses searching.</div>
+      <div class="example-prompt">"Fix the bug in src/login.js where the password field doesn't validate"</div>
+      <div class="example-prompt">"Write a function to parse CSV files in main.py and add tests for it"</div>
+      <div class="example-prompt">"Review my API error handling in app/routes.py for best practices"</div>
+    </div>
+
+    <div class="tip-item">
+      <div class="tip-number">Tip 5: Reset if Claude gets confused</div>
+      <div class="tip-text">If Claude seems confused or is going in circles, type <span class="highlight">/clear</span> and start over with a better prompt. A fresh start is often faster than trying to correct course.</div>
+    </div>
+
+    <div class="impact-note">
+      These 5 habits alone can cut your usage by 50%
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="step4-commands.html" class="back-link">Back</a>
+    <a href="step6-done.html" class="next-button">Next</a>
+  </div>
+
+</body>
+</html>

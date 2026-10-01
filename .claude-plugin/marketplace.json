@@ -1,0 +1,13 @@
+{
+  "name": "apurv-ed",
+  "owner": {
+    "name": "Apurv-ed"
+  },
+  "plugins": [
+    {
+      "name": "ap-optimal-claude",
+      "source": "./plugins/ap-optimal-claude",
+      "description": "Optimized Claude Code workflow kit: auto-updating hooks (session-context loading, self-review on stop, pre-commit status, pre-compact handoff, delegate-findings measurement), session startup + handoff system, project documentation skills, outcome-grading loops, spec/fix/prd workflows, and specialist agents (architect, code-verifier, mechanic) that tag every finding as reproduced or unverified."
+    }
+  ]
+}

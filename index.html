@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Setup Wizard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 60px 30px;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  h1 {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 16px;
+  }
+  .question {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #333;
+  }
+  .card {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin: 14px 0;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .card.recommended {
+    border-color: #4a7c59;
+    background: #f8fdf9;
+  }
+  .card.recommended:hover { border-color: #3a6349; }
+  .card.existing { border-color: #d4a574; background: #fffcf8; }
+  .card.existing:hover { border-color: #b8895d; }
+
+  .card h2 {
+    font-size: 17px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .card.recommended h2 { color: #3a6349; }
+  .card.existing h2 { color: #96652e; }
+  .card p { font-size: 14px; color: #555; line-height: 1.5; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #4a7c59;
+    color: #fff;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 13px;
+    color: #999;
+  }
+  .footer a { color: #888; text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+  <h1>Claude Code Setup</h1>
+  <p class="subtitle">Get optimized settings in 10 minutes</p>
+
+  <p class="question">Do you have existing Claude Code settings you want to keep?</p>
+
+  <a href="step1-install.html" class="card recommended">
+    <h2>No / I'm not sure <span class="badge">Recommended</span></h2>
+    <p>Use our recommended setup. One command installs everything - optimized configuration, safety wrapper, token savings, and plugins. Your existing files are backed up.</p>
+  </a>
+
+  <a href="step1-smart.html" class="card existing">
+    <h2>Yes, I have settings I want to keep</h2>
+    <p>Claude will analyze your current setup, show what's recommended vs what you have, and only add what's missing. Nothing gets overwritten without your approval.</p>
+  </a>
+
+  <div class="footer">
+    <p>Already set up? Read the <a href="claude-code-best-practices.html">Best Practices Guide</a> to save tokens and reduce costs.</p>
+  </div>
+
+</body>
+</html>

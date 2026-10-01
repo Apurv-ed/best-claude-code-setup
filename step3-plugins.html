@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Setup - Step 3</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #4a7c59;
+    width: 50%;
+  }
+
+  .step-counter {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  .content {
+    flex: 1;
+    margin-bottom: 40px;
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  .instruction {
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .plugin-item {
+    background: #faf7f4;
+    border-left: 4px solid #d4a574;
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .plugin-command {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: inline-block;
+    margin: 8px 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .plugin-description {
+    font-size: 13px;
+    color: #444;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  .note {
+    background: #f0f8ff;
+    border-left: 4px solid #4a7c59;
+    padding: 12px 14px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: #1a1a2e;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 30px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .back-link {
+    font-size: 13px;
+    color: #999;
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: #666;
+  }
+
+  .next-button {
+    background: #4a7c59;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s;
+  }
+  .next-button:hover {
+    background: #3a6349;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
+
+  <div class="step-counter">Step 3 of 6</div>
+
+  <div class="content">
+    <h1>Install Recommended Plugins</h1>
+
+    <p class="instruction">You're still in your Claude Code session. Type each of these one at a time, pressing Enter after each:</p>
+
+    <div class="plugin-item">
+      <div class="plugin-command">/plugin install superpowers@claude-plugins-official</div>
+      <div class="plugin-description">Adds structured workflows for planning, debugging, and code review. Helps you work faster with built-in superpowers.</div>
+    </div>
+
+    <div class="plugin-item">
+      <div class="plugin-command">/plugin install context7@claude-plugins-official</div>
+      <div class="plugin-description">Gives Claude access to the latest library and framework documentation. Never worry about stale docs again.</div>
+    </div>
+
+    <div class="plugin-item">
+      <div class="plugin-command">/plugin install code-simplifier@claude-plugins-official</div>
+      <div class="plugin-description">Reviews your code for quality and efficiency. Catches common issues and suggests improvements.</div>
+    </div>
+
+    <div class="note">
+      These plugins are optional but highly recommended. They extend Claude Code's capabilities and are free to install.
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="step2-verify.html" class="back-link">Back</a>
+    <a href="step4-commands.html" class="next-button">Next</a>
+  </div>
+
+</body>
+</html>

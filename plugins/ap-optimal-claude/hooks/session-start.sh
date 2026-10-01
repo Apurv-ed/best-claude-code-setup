@@ -28,16 +28,13 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ ! -f STATUS.md ]; then
 ## End Goal
 [describe the end goal here]
 
-## Done
+## Now
 - nothing yet
 
-## In Progress
+## Next
 - nothing yet
 
-## Next Steps
-- nothing yet
-
-## Blockers / Decisions
+## Blockers
 - none
 STATUSMD
 fi
@@ -85,38 +82,24 @@ if [ -f "$MIN_VER_FILE" ] && [ -f "$CUR_VER_FILE" ]; then
     fi
 fi
 
-# Append instruction Claude will actually see (additionalContext, not systemMessage)
-STARTUP_MSG="\n[SESSION START]"
-[ -n "$REPO_CREATED" ] && STARTUP_MSG="$STARTUP_MSG $REPO_CREATED"
-STARTUP_MSG="$STARTUP_MSG Invoke the startup skill now (Skill tool, skill=\"startup\") to list relevant skills. IMPORTANT: Watch the context % in the status bar - quality degrades past 40%. Type 'handoff' the moment it hits 40%, before continuing work."
-CONTEXT="$CONTEXT$STARTUP_MSG"
-
 PYTHON=$(command -v python3 || command -v python) 2>/dev/null
 [ -z "$PYTHON" ] && exit 0
 
+# Keep the installed setup current from the plugin (team rules, add-only deny rules,
+# one-time migrations). All logic lives in scripts/sync_setup.py, which the installer
+# also runs, so there is one implementation. Changes it makes take effect next session.
+SYNC_NOTES=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/sync_setup.py" 2>/dev/null)
+if [ -n "$SYNC_NOTES" ]; then
+    CONTEXT="$CONTEXT\n[SETUP UPDATED BY THE TEAM PLUGIN] Mention these in one short line at the start of your response:\n$SYNC_NOTES"
+fi
+
+# Append instruction Claude will actually see (additionalContext, not systemMessage)
+STARTUP_MSG="\n[SESSION START]"
+[ -n "$REPO_CREATED" ] && STARTUP_MSG="$STARTUP_MSG $REPO_CREATED"
+STARTUP_MSG="$STARTUP_MSG Invoke the startup skill now (Skill tool, skill=\"ap-optimal-claude:startup\") to list relevant skills. IMPORTANT: Watch the context % in the status bar - quality degrades past 40%. Type 'handoff' the moment it hits 40%, before continuing work."
+CONTEXT="$CONTEXT$STARTUP_MSG"
+
 echo -e "$CONTEXT" | $PYTHON -c "
-import json, sys, os
-
-# Push managed settings keys to settings.json (takes effect on next Claude restart).
-# SCALAR keys only - the loop below does a flat overwrite (s[k] = v), so never add
-# merge-semantics keys like 'permissions' here or it would clobber a user's own rules.
-# Deny-rule changes must go through re-running the installer, not this hook.
-# 'model' was removed in 1.5.1: forcing it every session silently overwrote each
-# person's own /model choice (e.g. back to opusplan = Sonnet for execution).
-# The installer still sets opusplan for NEW installs only.
-MANAGED = {'skillListingBudgetFraction': 0.02}
-sp = os.path.expanduser('~/.claude/settings.json')
-try:
-    with open(sp) as f:
-        s = json.load(f)
-    if any(s.get(k) != v for k, v in MANAGED.items()):
-        for k, v in MANAGED.items():
-            s[k] = v
-        with open(sp, 'w') as f:
-            json.dump(s, f, indent=2)
-except Exception:
-    pass  # skip migration if settings.json is missing or unparseable
-
-content = sys.stdin.read()
-print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': content}}))
+import json, sys
+print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': sys.stdin.read()}}))
 "

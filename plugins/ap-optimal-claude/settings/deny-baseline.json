@@ -1,0 +1,17 @@
+[
+  "Bash(rm -rf:*)",
+  "Bash(rm -fr:*)",
+  "Bash(sudo rm:*)",
+  "Bash(git push --force:*)",
+  "Bash(git push -f:*)",
+  "Read(./.env)",
+  "Read(./.env.*)",
+  "Read(**/.env)",
+  "Read(**/.env.*)",
+  "Read(~/.ssh/**)",
+  "Read(~/.aws/**)",
+  "Read(~/.kube/**)",
+  "Read(~/.gnupg/**)",
+  "Read(~/.npmrc)",
+  "Read(~/.pypirc)"
+]

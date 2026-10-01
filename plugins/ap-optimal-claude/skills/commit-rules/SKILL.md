@@ -28,11 +28,14 @@ Changes:
 
 ## Documentation Check (before committing)
 
-Update relevant project docs to reflect the work being committed. Skip files
-that haven't changed - don't add boilerplate updates.
+Update each fact the commit changes in its ONE home (project-docs skill). Skip
+files that haven't changed - no boilerplate updates, no copying a fact into a
+second file.
 
-- **STATUS.md** - always check; update if state, progress, or blockers changed
-- **ROADMAP.md** - update if a milestone completed or direction shifted
-- **METRICS.md** - update if measurable progress was made
-- **context/state.md** - update if phase, next action, or blockers changed
-- **EXPERIMENTS.md** - update if an experiment concluded (AI/ML projects only)
+- **STATUS.md** - goal, Now / Next, blockers changed?
+- **CHANGELOG.md** - one dated entry for user-visible changes
+- **docs/decisions.md** - only when a real decision (with a reason) was made
+- **README.md / CLAUDE.md** - only if setup, usage or conventions changed
+- **METRICS.md** - only if the project measures something and it moved
+
+Then run the doc check (`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doc_check.py"`).

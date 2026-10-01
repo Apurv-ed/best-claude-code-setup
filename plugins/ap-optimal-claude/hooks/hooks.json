@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/session-start.sh",
             "statusMessage": "Loading session context..."
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-check.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/pre-commit-check.sh",
             "if": "Bash(git commit*)",
             "statusMessage": "Checking git status..."
           }
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/delegate-findings-note.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/delegate-findings-note.sh",
             "timeout": 10,
             "statusMessage": "Noting what the delegate actually checked..."
           }
@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/pre-compact.sh",
             "statusMessage": "Preserving context before compaction..."
           }
         ]
@@ -53,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-self-review.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/stop-self-review.sh",
             "statusMessage": "Verifying work completeness..."
           }
         ]
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/memory-write-check.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/memory-write-check.sh",
             "statusMessage": "Checking memory..."
           }
         ]

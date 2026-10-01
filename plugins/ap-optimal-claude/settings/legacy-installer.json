@@ -1,0 +1,84 @@
+{
+  "skill_sha256": {
+    "startup": [
+      "17b20b4a3cef01be996e626d51b4136b35c388ba9d2b2abbf28bd905fc838eec",
+      "2eb00664c9b3ae0bd666dcaf349fa5fc578ba466bceef34ad852efc1f83081d6",
+      "6d74a134702e33e4e984064441da521455af5d46e4f997b8fd526a7fdde38704",
+      "76844ef4a294d0c862130937beff9500e0010ae01160c6701c3794c8601571f4",
+      "7b0dfe7abe73dbee077356db44524f5aac9882b71c8e869d0ec310c3c291c5b9",
+      "817048611459e365bd4ad2b6cf7b6b9747733d01ed8f9d8ddd94256906123bc4",
+      "a6dcdb303a8d2f61eda06d7498df226687c81a1a8cc1e1823b1454a1c235cafa",
+      "a7b4685b44da1a8c8ffd73940caae42564faeda81275b1da98f54a3f4759aeaf",
+      "fb5bee6e0b769c2de4cc6754fe5e67de61af7e10d2d0a3b11f384479d9b851e7"
+    ],
+    "update-github": [
+      "2d04ff351b280445e12b970302bac22ae70fe4283042025248065fe194639b2b",
+      "9f7452a6fb36d554b69509abca74eedbf57708693544cc7bb757d360a7b2562a"
+    ],
+    "project-docs": [
+      "ffde4ff44bd03059f450231da8f84e422dda0647f55456941d1b7cea2aa79d5a"
+    ],
+    "save-transcription": [
+      "e90bee0fed878d01e2be3291e547cceba96525a69ed029bf2da018b5b9662a0f"
+    ],
+    "grill-me": [
+      "af7386b2f0b2aae8996e1abb1aad59bc077b331c10c488c8fb8083fb5be10857"
+    ],
+    "context-reminder": [
+      "6c0d63188150c5c76a3b823ba57f424cd6edaa08a23417de0d461207f8aeb1d1",
+      "bafdbafac0045e3d7f5a880100122d8daac9285f769a51845650129303d8b8f0",
+      "f3e05753663aca4b6ee255a70918f4773b2dbd7c704a10174e113b3b5d1ee375"
+    ]
+  },
+  "claude_md_headings": [
+    "## Clarifying Questions",
+    "## Command Style",
+    "## Command Style Rules",
+    "## Commit Messages",
+    "## Commit Messages - THIS IS NON-NEGOTIABLE",
+    "## Communication",
+    "## Communication Style",
+    "## Context Efficiency",
+    "## Context Preservation",
+    "## Context Preservation - AUTO-UPDATE EVERY 3-4 MESSAGES",
+    "## Context Window Monitoring",
+    "## Critical Honesty (Default Disposition)",
+    "## Critical Rules",
+    "## Data & Analysis",
+    "## Deployment",
+    "## Deployment Rules",
+    "## General Practices",
+    "## Git",
+    "## Git Commit Discipline",
+    "## Git Workflow",
+    "## Long-Running Processes",
+    "## Machine Resources (Mac + VM)",
+    "## Mandatory Self-Review Before Claiming Done",
+    "## Maximize Parallelism and Minimize User Work",
+    "## No PII",
+    "## No PII in Documentation",
+    "## No PII in Public-Facing Content",
+    "## Open Source First",
+    "## Parallelism",
+    "## Phase Checkpoints",
+    "## Platform",
+    "## Project Boundaries",
+    "## Project Documentation",
+    "## Project Initialization",
+    "## Project Structure",
+    "## Security",
+    "## Self-Improvement Loop",
+    "## Self-Review Before Claiming Done",
+    "## Software Engineering Principles",
+    "## Superpowers",
+    "## Superpowers - USE THEM",
+    "## Testing",
+    "## Testing Requirements",
+    "## Tools",
+    "## Tools - USE THESE PROACTIVELY",
+    "## Transcriptions",
+    "## Typography",
+    "## Web Search"
+  ],
+  "source": "57 historical versions of claude-setup.py"
+}

@@ -41,216 +41,13 @@ HOOKS_DIR = os.path.join(CLAUDE_DIR, "hooks")
 
 
 # ---------------------------------------------------------------------------
-# CLAUDE.md content - platform-adapted
+# Team rules (formerly the CLAUDE.md body) and the shared skills
 # ---------------------------------------------------------------------------
-
-def get_platform_section():
-    if IS_MAC:
-        return (
-            "## Platform\n"
-            "- I use a Mac. Always use macOS keyboard shortcuts (Cmd, Option, etc.), "
-            "macOS paths, and macOS-specific tools (pbcopy, open, etc.). Never reference "
-            "Windows or Linux shortcuts - use the Mac equivalent (e.g., Cmd+Option+I for "
-            "browser dev tools).\n"
-            "- macOS has no GNU `timeout` command. Do not use it; use the Bash tool's "
-            "timeout parameter or run_in_background instead.\n"
-        )
-    elif IS_WINDOWS:
-        return (
-            "## Platform\n"
-            "- I use Windows. Always use Windows keyboard shortcuts (Ctrl, Alt, etc.), "
-            "Windows paths (backslashes), and Windows-specific tools. Never reference "
-            "Mac shortcuts like Cmd - use the Windows equivalent (e.g., Ctrl+Shift+I or "
-            "F12 for browser dev tools).\n"
-        )
-    else:
-        return (
-            "## Platform\n"
-            "- I use Linux. Always use Linux keyboard shortcuts and paths. "
-            "Use xdg-open for opening files/URLs.\n"
-        )
-
-
-CLAUDE_MD_BODY = r"""
-## Context Efficiency
-- Do not echo back file contents you just read.
-- Do not narrate tool calls ("Let me read the file..."). Just do it.
-- Keep explanations proportional to complexity. No preambles or sycophantic language.
-- Never re-read a file already read in this session.
-- For files over 500 lines, use offset/limit to read only the relevant section.
-- Use Grep to locate sections before reading entire files.
-- When understanding a component's API contract, read its interface / abstract class / protocol / trait before its implementation - same information, ~75% fewer tokens.
-- When dispatching subagents, end prompts with: "Final response under 2000 characters."
-- Do not paste file contents into subagent prompts. Give them the path and let them read it.
-
-## Clarifying Questions
-- Always ask clarifying questions for complex or ambiguous tasks. Do not assume.
-- Always put questions at the very bottom of your response. Structure: work first, then questions.
-- For high-risk tasks (database migrations, destructive operations, architectural changes), state your planned approach in 3-5 bullet points and wait for approval.
-
-## Critical Honesty (Default Disposition)
-Default to appropriate skepticism, not agreement:
-- Question assumptions embedded in my requests when they seem wrong or untested and when it's relevant to the quality of the outcome.
-- If I propose an approach with real flaws, name them upfront - don't validate first and bury concerns as a footnote.
-- Hold your position under pushback unless I provide new information, reasoning you haven't addressed, or expertise you should defer to. Me simply disagreeing is not a reason to change your assessment.
-- Be diplomatically honest rather than dishonestly diplomatic. No vague hedging to avoid discomfort, no epistemic cowardice.
-- If something is genuinely good, say so plainly. Don't invent flaws to seem rigorous, and don't soften correct positive assessments either.
-
-## Tools
-- **Context7:** Before implementing ANY library/framework/API, check the latest docs. Do not rely on training data.
-- **Sequential Thinking:** For complex problems, debugging, architecture decisions, or multi-step planning, automatically activate sequential thinking MCP.
-- Never ask for permission to search the web. Just do it.
-- **Skills:** Before starting any niche or domain-specific task (marketing, SEO, data analysis, etc.), check if a relevant skill exists and recommend using it if so.
-- **grill-me:** When the user has a plan and is about to implement something non-trivial, if grill-me is not in the available skills list, suggest they install it: create `~/.claude/skills/grill-me/SKILL.md` or re-run `claude-setup.py`.
-- **Marketing skills plugin:** When working on any project involving marketing, growth, copywriting, SEO, content strategy, social media, pricing, sales, product positioning, referrals, or any other business/go-to-market work - enable the marketingskills plugin for that project by adding `"marketing-skills@marketingskills": true` to `enabledPlugins` in `.claude/settings.local.json`. Do this automatically at session start without being asked.
-
-## Open Source First
-- Before building anything non-trivial - code, a script, a tool, a hook, a skill, an agent, an automation, a whole feature - search for an existing open-source solution first: libraries, GitHub repos, CLIs, Claude Code plugins/skills/MCP servers, templates. This applies at every step, not just at project start, and to what we publish too.
-- Use a good existing one instead of reinventing the wheel. "Good" means maintained, widely used, permissive license, and safe (read its code or reputation before trusting it).
-- Build custom only when nothing good exists or there is a specific reason (licensing, size, security, poor fit), and say in one line what you checked and why it was not used.
-
-## Software Engineering Principles
-
-When writing new code, embody these. When about to violate one, flag it briefly
-in your response - don't restructure unrequested code, but don't silently
-introduce violations either.
-
-**Always:**
-- **High Cohesion**: each function/class/module does one thing. If you can
-  describe it with "and", split it.
-- **Low Coupling**: application modules interact through minimal, well-defined
-  interfaces. Never reach into another application module's internals.
-- **Encapsulation**: expose only what callers need; everything else is private
-  or internal by default.
-
-**When state is involved:**
-- **Single Source of Truth**: each piece of mutable state has one place where
-  it is written. Reads can be distributed; writes cannot. Never let two
-  components independently modify the same state.
-
-**For multi-module projects (not scripts or single-file utilities):**
-- **Layered Architecture**: if the project has distinct layers (presentation /
-  business logic / data access), respect them. Don't skip layers without
-  flagging it explicitly.
-- **Named pattern**: before writing a new class, service, or design involving
-  multiple interacting components, name the pattern in plain English -
-  event-based (Observer/pub-sub), swappable strategy (Strategy), multiple
-  creation types (Factory Method), integration shim (Adapter), simplified
-  interface (Facade). Name it before writing; if none fits, say so.
-
-**Before presenting non-trivial changes:**
-- Pause and ask yourself: "Is there a more elegant way?" If the fix feels hacky, implement the elegant solution instead.
-- Skip for simple, obvious fixes - don't over-engineer.
-
-## Testing
-- Every piece of code must have tests. No exceptions.
-- Run tests after writing them. If tests fail, fix the code not the tests (unless the test is wrong).
-- After any bug fix or feature, run the full test suite before committing.
-- For Python projects, run `pytest` with full output after changes.
-
-## Security
-- Never put API keys, secrets, or tokens in frontend code. All secrets stay server-side via environment variables.
-- Audit third-party skills before trusting them.
-- Never use a superuser/admin database account for application connections. Use a role scoped to only what the application needs.
-- Apply principle of least privilege: database users, API keys, and service accounts get only the permissions they actually need.
-- For row-level access control, use RLS (Row Level Security) in the database rather than application-layer filtering.
-
-## Context Preservation
-- When starting a new session, read existing .md files first to restore context.
-- If STATUS.md does not exist in the project root, create it immediately before doing any other work. It must include: end goal, done, in progress, next steps, blockers/decisions.
-- Update STATUS.md after every logical milestone - not just at session end. It should always reflect current state.
-- Every project must have a documented grand goal (north star) - there is no such thing as a project without one. If it is missing or unclear, ask me what it is and document it before doing other work.
-- The end goal must always be the first section in STATUS.md. Judge every task through that lens: is this actually moving us toward the goal? If it doesn't serve the end goal, flag it.
-- Goals can evolve. When the grand goal changes, update the end goal section immediately - never keep working toward a stale north star.
-- Update project documentation .md files after completing each logical milestone or at natural breakpoints.
-
-## Self-Improvement Loop
-- Corrections and durable lessons go to Claude Code's built-in Auto Memory (one fact per file, under this project's memory directory, loaded automatically each session) - not a hand-maintained log file. `tasks/lessons.md` is retired; do not create new ones.
-- After ANY correction from the user, save it to memory using the memory instructions already in your system prompt - do not just narrate it back.
-- A `memory-write-check` hook nudges, at most once per session, if a correction-shaped moment (an interruption or a denied/failed action) passed with no memory file written since. Treat that nudge as a prompt to log what was learned, not something to dismiss.
-
-## Project Documentation
-- For any project under ~/Documents/dev/: if STATUS.md exists and ROADMAP.md does not, invoke the project-docs skill immediately at session start - before any other work. The skill defines ROADMAP.md, METRICS.md, EXPERIMENTS.md, context/, docs/adr/, and docs/research/.
-- Update those docs after completing any milestone (templates and rules live in the project-docs skill).
-
-## Transcriptions
-- When the user provides any audio, video, call recording, or transcript, invoke the save-transcription skill automatically - it files it under `docs/transcriptions/`.
-
-## Context Window Monitoring
-- Do NOT auto-trigger handoff warnings. The user monitors context % in the status bar and will type "handoff" when ready.
-
-### When I type "handoff" or "handoff <project>"
-Invoke the handoff skill (Skill tool, skill="handoff"). If a project name is given (e.g. "handoff my-app" - any folder under ~/Documents/dev/), the skill writes to `~/Documents/dev/<project>/docs/SESSION_HANDOFF.md` using git state from that directory. If no project name, writes to the current project. Pasting the last ~50 lines of a filled-up session helps capture mid-debug state, but is not required - the skill can reconstruct from git diff + log alone.
-
-### When I type "ooc" or "running out of context"
-Context is nearly full. Invoke the handoff skill (Skill tool, skill="handoff") for the current project, then reply with exactly: "Session saved. Open a new Claude Code session in this directory and type `read handoff` to resume."
-
-### On Every Session Start
-Invoke the startup skill immediately (Skill tool, skill="startup") as your very first action, before responding to anything. The hook will have already loaded SESSION_HANDOFF.md and STATUS.md as context - do not re-read them.
-
-## Git
-- Run `git status` and `git diff --staged` before every commit.
-- Before committing, scan ALL .md files in the project and update every one that is stale - no fixed list, check everything that exists.
-- After completing a logical unit of work, mention once that it is a good time to commit. Do not repeat.
-- When I say "update github": invoke the update-github skill (project CLAUDE.md may override it).
-- When I say "deploy": run the update-github skill first, then run the deployment (project CLAUDE.md may define a project-specific deploy).
-- Enable Dependabot on all new GitHub repos.
-
-## Deployment
-- Before considering any project's deployment complete, verify it can go from a fresh clone to working software with a single setup command (excluding secrets). Document this in a setup script or README.
-
-## Commit Messages
-Every commit must be thorough. Follow this format:
-- type(scope): short summary
-- Detailed description explaining WHY, not just what. At least 2-3 sentences.
-- List ALL affected files/components under "Changes:"
-- Types: feat, fix, refactor, docs, style, test, chore, perf, ci, build
-- Never write "fix stuff", "updates", or single-line messages for multi-file changes.
-
-## No PII in Public-Facing Content
-- Public-facing means anything people outside can see: public repos and their commit messages (including commit messages that a deploy copies to a public repo), published sites and artifacts, public gists, package releases. Never put real names, emails, phone numbers, addresses, IPs, usernames or client names there. The one exception is my own name where I have chosen to publish under it.
-- Private repos and local files may contain PII. Before anything moves from private to public, check it for PII.
-- API keys, tokens and passwords are secrets, not PII: never commit them anywhere, public or private.
-
-## Command Style
-- Never use multi-line bash commands. Chain on one line with && or ; or pipes.
-- For complex scripts, create a .sh or .py file and execute it.
-
-## Communication
-- Do NOT repeatedly suggest pushing, committing, or deploying. State what is ready once.
-- Never use em dashes anywhere. Use ` - ` or rewrite the sentence.
-- Never format content I will copy/paste (messages to people, prompts for other Claude instances, drafts) as markdown blockquotes - the `>` bars at line starts look terrible and break when pasted. Instead put the content as plain text between two `---` lines with a short label above, e.g. "Message below:". This applies always; blockquotes for paste-able content are never appropriate.
-
-## Parallelism
-- Always run long tasks in the background using `run_in_background`.
-- Use subagents for 2+ independent tasks. Never do sequentially what can be done concurrently.
-- Subagents do not inherit conversation context. Every delegation must name exact files/paths, the goal or error state, and the expected output.
-- Minimize manual work for the user. If you can do it via CLI/API/SSH/scripting, do it.
-
-## Long-Running Processes
-- Probe first: before any long job (API scan, backtest, remote script, pipeline), run a minimal version (1 record / 2-3 rows / a one-liner) and confirm the output looks right. A 5-second probe prevents a 3-minute failure.
-- Run the full job with output redirected to a log (`cmd > output.log 2>&1 &`), check the log within 60s to confirm it is healthy, then check every ~5 minutes until done. Never run a long job silently.
-
-## Superpowers
-- Always use superpowers skills wherever applicable. Never skip them because "it's simple."
-- When executing plans: always use `superpowers:subagent-driven-development`. Never ask which approach.
-- Before claiming done: use `superpowers:verification-before-completion`.
-
-## Critical Rules
-- Never make assumptions about account balances, API limits, send volumes, or resource constraints. Always ask or read from config/env.
-- When presenting data/metrics, cross-verify against raw source data. Do not interpolate or estimate. Show exact raw data supporting each number.
-
-## Project Boundaries
-- Never modify or delete files inside another project's repo from the current session - a "helpful" cross-project edit can silently break that project. If work is needed there, write a paste-ready prompt for that project's own Claude instance and hand it to me. Reading other projects for context stays fine.
-
-## Machine Resources (Mac + VM)
-- CPU: processes you spawn must stay under ~25% of the Mac's processing power unless I explicitly allow more for a specific task. Throttle parallelism accordingly (worker counts, parallel jobs, make -j, concurrent subprocesses).
-- Storage: before creating anything that grows over time (datasets, caches, logs, downloaded models, build artifacts), state the expected size and growth. Flag anything likely to exceed ~1GB before writing it.
-- If a project directory, ~/.claude (projects/, transcripts, caches), or the VM looks bloated during normal work, surface it with a concrete plan: back up to the right remote (GitHub, dotenv repo, cloud storage) first, then clean up locally. Never delete unbacked data without asking.
-
-## Phase Checkpoints
-- Before starting each new phase of a multi-step task, run a full checkpoint: tests, clean git, 3-line status summary. Do not proceed until green.
-"""
+# Single source: the ap-optimal-claude plugin (rules/core.md, rules/platform-*.md,
+# skills/). After installing the plugin, setup() runs the plugin's
+# scripts/sync_setup.py, which writes ~/.claude/rules/ap-optimal-claude.md and
+# migrates old installer copies. The SessionStart hook runs the same script every
+# session, so rule changes reach everyone without re-running this installer.
 
 
 # ---------------------------------------------------------------------------
@@ -474,130 +271,11 @@ def get_notification_hook():
 
 
 # ---------------------------------------------------------------------------
-# Skill file contents (installed into ~/.claude/skills/ by setup())
-# ---------------------------------------------------------------------------
-
-SKILL_STARTUP = """---
-name: startup
-description: Run at the start of every new session. Lists relevant skills for the project.
----
-
-# Session Startup
-
-The hook has already handled git repo creation and STATUS.md. Your job here is two things:
-
-## Step 1: Memory Context
-
-Auto Memory has already been loaded into context automatically by Claude Code itself (not by this project's session-start hook) - do not re-read it. If a legacy `tasks/lessons.md` still exists in this project root (pre-migration, not yet ported), read it silently and apply its rules for this session too.
-
-## Step 2: Relevant Skills
-
-From the available skills list, pick 3-5 most relevant to this project and list them:
-`- skill-name: one line on what it does`
-
-## Step 3: Summary
-
-One line: `Session ready | memory: [auto-loaded]`
-
-Note: context usage is shown in the status line. Quality degrades past ~40% — if it reaches 40%, the user types `handoff` immediately. Do not schedule reminder wakeups - they re-read the whole conversation at cold-cache prices.
-"""
-
-SKILL_UPDATE_GITHUB = """---
-name: update-github
-description: Update all project docs substantively, commit, push, and write a session handoff. Use when the user says "update github". For "deploy", run this first, then the deployment.
----
-
-# Update GitHub
-
-If the project CLAUDE.md defines "update github" differently, follow that instead.
-
-Steps in order:
-
-1. Invoke the handoff skill first - safety net before anything changes.
-2. Scan ALL .md files in the project (root, context/, docs/, docs/adr/, anywhere) - do not use a fixed list, find everything that exists. For each file: read its current content, cross-reference against actual session work (git diff + conversation), and make substantive updates (new entries, revised statuses, updated roadmap items, new insights, current metrics). Cosmetic edits or date-only changes are not enough.
-3. Run `git status` and `git diff --stat HEAD` to confirm what changed.
-4. Commit with a thorough message (type(scope): summary, then WHY, then all changes).
-5. `git push origin HEAD`.
-6. Invoke the handoff skill again to capture the final documented state.
-"""
-
-SKILL_PROJECT_DOCS = """---
-name: project-docs
-description: Project documentation system - creates and maintains ROADMAP.md, METRICS.md, EXPERIMENTS.md, context/, docs/adr/, docs/research/. Use at session start when STATUS.md exists but ROADMAP.md does not, or whenever creating or structuring project docs.
----
-
-# Project Documentation System
-
-If STATUS.md exists and ROADMAP.md does not, create ROADMAP.md, METRICS.md, and `context/` immediately - before any other work.
-
-## ROADMAP.md
-Outcome-focused, not a feature list. Sections: End Goal (one sentence), Now, Next, Later, Completed, Risks.
-- Now/Next/Later: outcomes, not tasks
-- Risks table: Risk | Likelihood (1-5) | Impact (1-5) | Mitigation - keep to 3-5 risks max
-Update after completing any milestone or shifting direction.
-
-## METRICS.md
-How we measure success. Table: Metric | Baseline | Target | Current | Last Updated.
-Update at each milestone checkpoint.
-
-## EXPERIMENTS.md
-For AI/ML projects and product experiments. Prevents repeating failed experiments.
-Each entry: Date, Hypothesis, Method, Result, Conclusion, Next Step.
-Skip for pure infrastructure/refactoring work.
-
-## context/ directory
-AI-optimized snapshot for fast session restoration. Update after every logical milestone.
-- `context/state.md` - current phase, immediate next action, recent changes, blockers
-- `context/schema.md` - data structures, interfaces, API contracts, environment variables
-- `context/decisions.md` - tactical/operational decisions (tooling, process, config) + one-line reasoning
-- `context/insights.md` - discoveries, gotchas, non-obvious learnings
-
-Note: `context/decisions.md` is for operational decisions. Technology/architecture choices (framework, database, irreversible patterns) belong in `docs/adr/` instead. Do not duplicate entries between the two.
-
-## docs/adr/ (Architecture Decision Records)
-One file per architectural decision: `docs/adr/NNN-title.md`
-Fields: Status, Context, Decision, Consequences, Alternatives Considered.
-Append-only - never edit past ADRs, write a new one to supersede.
-Create when: choosing a framework, database, architecture pattern, or any hard-to-reverse decision.
-
-## docs/research/
-Save reference material, papers, and external docs here before reading so they are available next session. Name files: `YYYY-MM-DD-[topic].md`. Keep a one-line description at the top of each file.
-"""
-
-SKILL_SAVE_TRANSCRIPTION = """---
-name: save-transcription
-description: Save any provided audio, video, Zoom call, voice memo, or other recording/transcript as a file in the current project. Use automatically whenever the user provides a transcript or recording content.
----
-
-# Save Transcription
-
-- Save to `docs/transcriptions/YYYY-MM-DD-[source-or-topic].md` (e.g., `docs/transcriptions/2026-04-15-zoom-call.md`).
-- Create the `docs/transcriptions/` directory if it does not exist.
-- Include metadata at the top: date, source type, participants (if known), topic/title.
-- Do this automatically without being asked.
-"""
-
-SKILL_GRILL_ME = """---
-name: grill-me
-description: Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions "grill me".
----
-
-Interview me relentlessly about every aspect of this plan until
-we reach a shared understanding. Walk down each branch of the design
-tree resolving dependencies between decisions one by one.
-
-If a question can be answered by exploring the codebase, explore
-the codebase instead.
-
-For each question, provide your recommended answer.
-"""
-
-# ---------------------------------------------------------------------------
 # ccx wrapper script
 # ---------------------------------------------------------------------------
 # NOTE: the command is deliberately NOT named "cc" - that shadows the system
 # C compiler (/usr/bin/cc) and breaks native builds. Safety comes from
-# permissions.deny rules in settings.json (enforced even in bypass mode),
+# permissions.deny rules in settings.json (enforced in every permission mode),
 # not from a bypassable --disallowedTools blocklist.
 
 CCX_SCRIPT_UNIX = """#!/bin/bash
@@ -707,6 +385,30 @@ def install_ccx_wrapper():
 # Main
 # ---------------------------------------------------------------------------
 
+def run_plugin_sync():
+    """Run the installed plugin's sync_setup.py (team rules, migrations, deny rules).
+
+    Same script the SessionStart hook runs every session, so the installer and the
+    plugin share one implementation. Returns True when it ran.
+    """
+    pattern = os.path.join(CLAUDE_DIR, "plugins", "cache", "*", "ap-optimal-claude", "*", "scripts", "sync_setup.py")
+    found = sorted(glob.glob(pattern), key=os.path.getmtime)
+    if not found:
+        print("  [SKIP] plugin not installed yet - the team rules arrive at your first session start.")
+        return False
+    script = found[-1]
+    env = dict(os.environ, CLAUDE_PLUGIN_ROOT=os.path.dirname(os.path.dirname(script)))
+    try:
+        r = subprocess.run([sys.executable, script], capture_output=True, text=True, env=env, timeout=60)
+        for line in (r.stdout or "").splitlines():
+            print(f"  [OK] {line}")
+        print(f"  [OK] team rules: {os.path.join(CLAUDE_DIR, 'rules', 'ap-optimal-claude.md')}")
+        return True
+    except Exception as exc:
+        print(f"  [!] setup sync failed ({exc}) - it retries at your next session start.")
+        return False
+
+
 def install_team_plugin():
     """Belt-and-suspenders plugin install via the claude CLI.
 
@@ -760,10 +462,9 @@ def setup():
     if not backed_up:
         print("  No existing files to back up.")
 
-    # Write CLAUDE.md
-    print("\n2. Installing CLAUDE.md...")
-    claude_md = "# Claude Code Instructions\n\n" + get_platform_section() + CLAUDE_MD_BODY
-    write_file(os.path.join(CLAUDE_DIR, "CLAUDE.md"), claude_md)
+    # The team rules no longer go into ~/.claude/CLAUDE.md (which now belongs to the
+    # user): the plugin writes ~/.claude/rules/ap-optimal-claude.md in step 8.
+    print("\n2. Your ~/.claude/CLAUDE.md is left for your own instructions (team rules come from the plugin).")
 
     # Write settings.json - MERGE into any existing file (a timestamped backup was
     # made above). Overwriting wholesale would wipe user customizations: other
@@ -804,42 +505,10 @@ def setup():
     if not removed_any:
         print("  Clean install - nothing to migrate.")
 
-    # Write skills
-    print("\n4b. Installing skills...")
-    SKILLS_DIR = os.path.join(CLAUDE_DIR, "skills")
-    startup_dir = os.path.join(SKILLS_DIR, "startup")
-    os.makedirs(startup_dir, exist_ok=True)
-    write_file(os.path.join(startup_dir, "SKILL.md"), SKILL_STARTUP)
-    for skill_name, skill_content in [
-        ("update-github", SKILL_UPDATE_GITHUB),
-        ("project-docs", SKILL_PROJECT_DOCS),
-        ("save-transcription", SKILL_SAVE_TRANSCRIPTION),
-    ]:
-        skill_dir = os.path.join(SKILLS_DIR, skill_name)
-        os.makedirs(skill_dir, exist_ok=True)
-        write_file(os.path.join(skill_dir, "SKILL.md"), skill_content)
-    legacy_reminder = os.path.join(SKILLS_DIR, "context-reminder")
-    if os.path.isdir(legacy_reminder):
-        shutil.rmtree(legacy_reminder)
-        print("  [REMOVED] context-reminder skill (reminder loop retired)")
-
-    # Optional: grill-me skill
-    grill_me_dir = os.path.join(SKILLS_DIR, "grill-me")
-    grill_me_path = os.path.join(grill_me_dir, "SKILL.md")
-    if os.path.exists(grill_me_path) or os.path.exists(os.path.join(grill_me_dir, "skill.md")):
-        print("  [SKIP] grill-me skill already installed")
-    else:
-        try:
-            answer = input("\n  Install grill-me skill? Stress-tests plans before implementation (recommended) [Y/n]: ").strip().lower()
-        except EOFError:
-            # Non-interactive run (e.g. Claude executing the installer): default to yes
-            answer = ""
-        if answer in ("", "y", "yes"):
-            os.makedirs(grill_me_dir, exist_ok=True)
-            write_file(grill_me_path, SKILL_GRILL_ME)
-            print("  [OK] grill-me skill installed")
-        else:
-            print("  [SKIP] grill-me skill skipped")
+    # Skills (startup, update-github, project-docs, save-transcription, grill-me, ...)
+    # ship only in the plugin now. Old installer copies in ~/.claude/skills are removed
+    # by the plugin's sync_setup.py in step 8, and only when byte-identical to a copy
+    # some installer version wrote, so a skill a person edited is never touched.
 
     # Remove the dead .claudeignore (not a Claude Code feature; replaced by
     # permissions.deny Read rules in settings.json)
@@ -861,6 +530,9 @@ def setup():
     print("\n7. Installing the ap-optimal-claude team plugin...")
     install_team_plugin()
 
+    print("\n8. Applying team rules and migrations from the plugin...")
+    run_plugin_sync()
+
     # Self-copy: save installer to ~/.claude/claude-setup.py so the update
     # notification (injected by the session-start hook) always has a valid path
     # to give the user, regardless of where they originally ran this from.
@@ -881,14 +553,15 @@ def setup():
     print("=" * 50)
 
     print(f"\nPlatform:       {plat_name}")
-    print(f"CLAUDE.md:      {os.path.join(CLAUDE_DIR, 'CLAUDE.md')}")
+    print(f"Team rules:     {os.path.join(CLAUDE_DIR, 'rules', 'ap-optimal-claude.md')} (kept current by the plugin)")
+    print(f"Your rules:     {os.path.join(CLAUDE_DIR, 'CLAUDE.md')} and other files in {os.path.join(CLAUDE_DIR, 'rules')}")
     print(f"settings.json:  {os.path.join(CLAUDE_DIR, 'settings.json')}")
-    print(f"Hooks:          via the ap-optimal-claude plugin (auto-updating)")
+    print(f"Skills, hooks:  via the ap-optimal-claude plugin (auto-updating)")
 
     print("\n--- Continuous updates (auto-configured) ---")
-    print("  The team marketplace is registered with auto-update ON. Future")
-    print("  skill / agent / hook / settings changes arrive automatically on restart.")
-    print("  If a re-run is ever needed, Claude Code will tell you inside the session.")
+    print("  The plugin's marketplace is registered with auto-update ON. Skills, agents,")
+    print("  hooks, the team rules and new safety blocks arrive automatically: downloaded")
+    print("  during one session, active from the next. You should not need to re-run this.")
 
     print("\n--- Token optimization (auto-configured) ---")
     print("  MAX_THINKING_TOKENS=10000     (caps the extended-thinking budget)")
@@ -896,7 +569,7 @@ def setup():
     print("  Stop hook (via plugin)         (self-review pass when code was edited)")
 
     print("\n--- How to use ---")
-    print("  ccx             Start Claude Code (zero prompts, deny-rule guardrails)")
+    print("  ccx             Start Claude Code (auto mode + deny-rule guardrails)")
     print("  ccx --resume    Resume your last session")
     print("  claude          Same thing (settings.json sets the permission mode)")
 

@@ -50,13 +50,15 @@ The installer registers the team plugin marketplace and installs ap-optimal-clau
 /plugin marketplace add Apurv-ed/best-claude-code-setup
 /plugin install ap-optimal-claude@apurv-ed
 ```
-Verify: restart, `/plugin` shows ap-optimal-claude installed, and asking Claude to run `rm -rf /tmp/guardrail-test` gets blocked. Your previous CLAUDE.md and settings.json are backed up with timestamps before anything is replaced.
+Then turn on automatic updates: run `/plugin`, open the **Marketplaces** tab, select `apurv-ed`, choose **Enable auto-update** (marketplaces added by hand start with it off).
+
+Verify: restart, `/plugin` shows ap-optimal-claude installed, and asking Claude to run `rm -rf /tmp/guardrail-test` gets blocked. Your settings.json is backed up with a timestamp before it is merged; your own CLAUDE.md is kept.
 </details>
 
 ## FAQ
 
 **Will this overwrite my personal setup?**
-The installer replaces CLAUDE.md and settings.json (timestamped backups are made first - you can restore anything). The plugin overwrites nothing.
+No. The installer merges into settings.json (a timestamped backup is made first) and leaves your own `~/.claude/CLAUDE.md` alone: the team rules live in a separate file, `~/.claude/rules/ap-optimal-claude.md`, which the plugin keeps current. If an older install had put the team rules into your CLAUDE.md, they are moved out and anything you added there is kept (backup in `~/.claude/backups/`).
 
 **I already had Claude Code working fine.**
 You'll keep everything you like and gain the verification hooks, guardrails, and session memory. If something feels wrong, your backups are in `~/.claude/` with timestamps and the plugin uninstalls in one command.
@@ -65,7 +67,7 @@ You'll keep everything you like and gain the verification hooks, guardrails, and
 Run `python claude-setup.py` instead. Everything works (plugin skills, agents, guardrails, settings). The six hook scripts are bash: Claude Code runs them through Git Bash automatically if Git for Windows is installed. Five of them also call `python3`, so make sure typing `python3 --version` in Git Bash works; if it doesn't, those hooks can't do their job. Without Git for Windows you still get the full plugin + guardrails; the automatic session-context loading and stop-time self-review just won't run.
 
 **Do I need to update this myself later?**
-No. The team plugin is installed with auto-update on, so new skills, agents, and hooks arrive automatically when you restart Claude Code - you never re-run anything for those. You only re-run the setup paste-block if the core instructions or safety rules change, and we'll tell you in Slack when that happens (rare).
+No. The team plugin is installed with auto-update on, so new skills, agents, hooks, the team rules and new safety blocks arrive automatically: downloaded during one session, active from the next. You should not need to re-run the setup.
 
 **Something broke / question?**
 Post in the Slack thread. Known quirk: if `ccx` is not found after install, add `~/.local/bin` to your PATH (the installer prints the exact line).

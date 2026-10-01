@@ -142,6 +142,7 @@ Every commit must be thorough. Follow this format:
 ## Command Style
 - Never use multi-line bash commands. Chain on one line with && or ; or pipes.
 - For complex scripts, create a .sh or .py file and execute it.
+- In Claude Code's shell, `grep` is Claude Code's built-in search (ugrep): it skips gitignored files and some options behave differently. When you need standard grep behaviour (scripts, gitignored files, exact flags), write `command grep`.
 
 ## Communication
 - Do NOT repeatedly suggest pushing, committing, or deploying. State what is ready once.

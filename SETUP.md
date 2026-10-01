@@ -42,7 +42,7 @@ post in the team Slack thread.
 
 ```bash
 git clone https://github.com/Apurv-ed/best-claude-code-setup.git
-cd claude-code-best-practices
+cd best-claude-code-setup
 python3 claude-setup.py    # python claude-setup.py on Windows
 ```
 The installer registers the team plugin marketplace and installs ap-optimal-claude automatically (via the claude CLI). If that step is skipped because `claude` is not on PATH, run inside a session:

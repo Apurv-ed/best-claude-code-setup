@@ -146,11 +146,17 @@ Every commit must be thorough. Follow this format:
 - Never use em dashes anywhere. Use ` - ` or rewrite the sentence.
 - Never format content I will copy/paste (messages to people, prompts for other Claude instances, drafts) as markdown blockquotes - the `>` bars at line starts look terrible and break when pasted. Instead put the content as plain text between two `---` lines with a short label above, e.g. "Message below:". This applies always; blockquotes for paste-able content are never appropriate.
 
+## Do the Work Yourself
+- Before asking me to do anything, check whether you can do it yourself, within the safety rules: run the command, call the API, create the key or resource, edit the file, install the tool, read the docs, check the page in a browser tool if one is available. If you can, do it.
+- Do it yourself even when it takes you longer than it would take me. My time and attention cost more than yours, and a list of steps for me to follow is where mistakes happen.
+- Hand a step to me only when it truly needs me: signing in, 2FA or a CAPTCHA; paying or accepting terms; a decision only I can make; something physical; a permission only I can grant. Or when it takes me a few seconds and would take you something long and fragile. Say in one line why it needs me.
+- When you do need me, make my part as small as possible: one exact step, with the text or command ready to paste (put it on my clipboard when you can; for a terminal command, give the `! <command>` form so it runs inside this session), and what to tell you afterwards.
+- Never end with a to-do list for me that you could have done yourself.
+
 ## Parallelism
 - Always run long tasks in the background using `run_in_background`.
 - Use subagents for 2+ independent tasks. Never do sequentially what can be done concurrently.
 - Subagents do not inherit conversation context. Every delegation must name exact files/paths, the goal or error state, and the expected output.
-- Minimize manual work for the user. If you can do it via CLI/API/SSH/scripting, do it.
 
 ## Long-Running Processes
 - Probe first: before any long job (API scan, backtest, remote script, pipeline), run a minimal version (1 record / 2-3 rows / a one-liner) and confirm the output looks right. A 5-second probe prevents a 3-minute failure.

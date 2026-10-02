@@ -51,7 +51,14 @@
   .hero .btn { border-color: var(--white); color: var(--white); }
   .hero .btn:hover, .hero .btn:focus-visible { color: var(--black); border-color: var(--yellow); }
   .btn.solid { background: var(--yellow); border-color: var(--yellow); color: var(--black); }
-  .btn.solid:hover { background: var(--white); border-color: var(--white); }
+  .btn.solid:hover, .btn.solid:focus-visible { background: var(--white); border-color: var(--white); color: var(--black); }
+  section.block .btn.solid:hover, section.block .btn.solid:focus-visible { background: var(--black); border-color: var(--black); color: var(--white); }
+  .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .cta-row.mid { margin-top: 40px; }
+  .textlink { font: 400 .72rem var(--mono); letter-spacing: .15em; text-transform: uppercase; color: #bbbbbb; text-decoration: none; border-bottom: 1px solid #555; padding-bottom: 2px; }
+  .textlink:hover { color: var(--yellow); border-color: var(--yellow); }
+  .textlink.dark { color: var(--muted); border-color: var(--mid); }
+  .textlink.dark:hover { color: var(--black); border-color: var(--black); }
   section.block { padding: 64px 0; border-top: 1px solid var(--mid); }
   .lead { font-size: 1.15rem; max-width: 640px; }
   .lead + .lead { margin-top: 16px; }
@@ -116,7 +123,10 @@
     <div class="label"><span>Claude Code setup</span></div>
     <h1>Claude Code, <em>set up properly.</em></h1>
     <p class="sub">One copy-paste makes Claude Code safer, easier on your plan, and working the way experienced builders work. No tech background needed.</p>
-    <button class="btn copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
+    <div class="cta-row">
+      <button class="btn solid copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
+      <a class="textlink" href="wizard.html">Or follow the step-by-step guide</a>
+    </div>
     <p class="note">Free &middot; About 2 minutes &middot; Your current settings are backed up first</p>
   </div>
 </header>
@@ -142,6 +152,10 @@
         <li><span class="num">04</span><div><h3>Your private things stay private</h3><p>Rules that keep passwords and keys out of your code, and personal details off anything public.</p></div></li>
         <li><span class="num">05</span><div><h3>It keeps getting better</h3><p>I update it as Claude Code changes and as better practices appear. Updates reach you automatically. You never reinstall anything.</p></div></li>
       </ul>
+      <div class="cta-row mid">
+        <button class="btn solid copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
+        <a class="textlink dark" href="#how">See how it works</a>
+      </div>
     </div>
   </section>
 

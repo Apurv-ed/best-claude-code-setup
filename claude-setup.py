@@ -108,18 +108,16 @@ def get_settings():
                     "repo": "Apurv-ed/best-claude-code-setup"
                 },
                 "autoUpdate": True
-            },
-            "bradautomates": {
-                "source": {
-                    "source": "github",
-                    "repo": "bradautomates/claude-video"
-                },
-                "autoUpdate": True
             }
         },
+        # Superpowers (structured planning, debugging, verification workflows) and
+        # Context7 (current library docs) come from Anthropic's official plugin
+        # marketplace, which auto-updates by default. Context7 needs a one-time
+        # sign-in via /mcp before it answers.
         "enabledPlugins": {
             "ap-optimal-claude@apurv-ed": True,
-            "watch@bradautomates": True
+            "superpowers@claude-plugins-official": True,
+            "context7@claude-plugins-official": True
         },
         # Only the Notification hook stays here: its Windows variant is a direct
         # powershell command that fires without bash, so it cannot move into the
@@ -135,6 +133,9 @@ def get_settings():
                 }
             ]
         },
+        # Status bar (model, context %, branch) via the ccstatusline npm package.
+        # It needs Node.js (npx); setup() drops it on machines without npx so they
+        # do not get an erroring status bar.
         "statusLine": {
             "type": "command",
             "command": "npx -y ccstatusline@2",
@@ -142,6 +143,8 @@ def get_settings():
         }
         # opusplan: Opus for plan/think mode, Sonnet for execution - see above.
     }
+    if not shutil.which("npx"):
+        settings.pop("statusLine")
     return settings
 
 
@@ -430,6 +433,14 @@ def install_team_plugin():
          "marketplace apurv-ed"),
         (["plugin", "install", "ap-optimal-claude@apurv-ed"],
          "plugin ap-optimal-claude"),
+        # Anthropic's official marketplace: registered on a first interactive
+        # session, but a fresh machine may not have it yet.
+        (["plugin", "marketplace", "add", "anthropics/claude-plugins-official"],
+         "marketplace claude-plugins-official"),
+        (["plugin", "install", "superpowers@claude-plugins-official"],
+         "plugin superpowers"),
+        (["plugin", "install", "context7@claude-plugins-official"],
+         "plugin context7 (sign in once with /mcp to use it)"),
     ]
     for args, label in steps:
         try:

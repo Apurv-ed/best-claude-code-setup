@@ -23,7 +23,7 @@ Default to appropriate skepticism, not agreement:
 - If something is genuinely good, say so plainly. Don't invent flaws to seem rigorous, and don't soften correct positive assessments either.
 
 ## Tools
-- **Context7:** Before implementing ANY library/framework/API, check the latest docs. Do not rely on training data.
+- **Context7:** Before implementing ANY library/framework/API, check the latest docs (Context7 if it is connected; it needs a one-time sign-in via /mcp, otherwise use web search). Do not rely on training data.
 - **Sequential Thinking:** For complex problems, debugging, architecture decisions, or multi-step planning, automatically activate sequential thinking MCP.
 - Never ask for permission to search the web. Just do it.
 - **Skills:** Before starting any niche or domain-specific task (marketing, SEO, data analysis, etc.), check if a relevant skill exists and recommend using it if so.
@@ -171,10 +171,10 @@ Every commit must be thorough. Follow this format:
 ## Project Boundaries
 - Never modify or delete files inside another project's repo from the current session - a "helpful" cross-project edit can silently break that project. If work is needed there, write a paste-ready prompt for that project's own Claude instance and hand it to me. Reading other projects for context stays fine.
 
-## Machine Resources (Mac + VM)
-- CPU: processes you spawn must stay under ~25% of the Mac's processing power unless I explicitly allow more for a specific task. Throttle parallelism accordingly (worker counts, parallel jobs, make -j, concurrent subprocesses).
+## Machine Resources
+- CPU: processes you spawn must stay under ~25% of this computer's processing power unless I explicitly allow more for a specific task, so the computer stays cool and usable for other work. Throttle parallelism accordingly (worker counts, parallel jobs, make -j, concurrent subprocesses).
 - Storage: before creating anything that grows over time (datasets, caches, logs, downloaded models, build artifacts), state the expected size and growth. Flag anything likely to exceed ~1GB before writing it.
-- If a project directory, ~/.claude (projects/, transcripts, caches), or the VM looks bloated during normal work, surface it with a concrete plan: back up to the right remote (GitHub, dotenv repo, cloud storage) first, then clean up locally. Never delete unbacked data without asking.
+- If a project folder or ~/.claude (transcripts, caches) looks bloated during normal work, surface it with a concrete plan: back up anything worth keeping first, then clean up locally. Never delete unbacked data without asking.
 
 ## Phase Checkpoints
 - Before starting each new phase of a multi-step task, run a full checkpoint: tests, clean git, 3-line status summary. Do not proceed until green.

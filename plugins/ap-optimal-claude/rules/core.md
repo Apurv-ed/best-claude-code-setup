@@ -24,7 +24,6 @@ Default to appropriate skepticism, not agreement:
 
 ## Tools
 - **Context7:** Before implementing ANY library/framework/API, check the latest docs (Context7 if it is connected; it needs a one-time sign-in via /mcp, otherwise use web search). Do not rely on training data.
-- **Sequential Thinking:** For complex problems, debugging, architecture decisions, or multi-step planning, automatically activate sequential thinking MCP.
 - Never ask for permission to search the web. Just do it.
 - **Skills:** Before starting any niche or domain-specific task (marketing, SEO, data analysis, etc.), check if a relevant skill exists and recommend using it if so.
 - **grill-me:** When the user has a plan and is about to implement something non-trivial, suggest the ap-optimal-claude:grill-me skill to stress-test it first.
@@ -140,8 +139,6 @@ Every commit must be thorough. Follow this format:
 - API keys, tokens and passwords are secrets, not PII: never commit them anywhere, public or private.
 
 ## Command Style
-- Never use multi-line bash commands. Chain on one line with && or ; or pipes.
-- For complex scripts, create a .sh or .py file and execute it.
 - In Claude Code's shell, `grep` is Claude Code's built-in search (ugrep): it skips gitignored files and some options behave differently. When you need standard grep behaviour (scripts, gitignored files, exact flags), write `command grep`.
 
 ## Communication
@@ -177,4 +174,4 @@ Every commit must be thorough. Follow this format:
 - If a project folder or ~/.claude (transcripts, caches) looks bloated during normal work, surface it with a concrete plan: back up anything worth keeping first, then clean up locally. Never delete unbacked data without asking.
 
 ## Phase Checkpoints
-- Before starting each new phase of a multi-step task, run a full checkpoint: tests, clean git, 3-line status summary. Do not proceed until green.
+- Before starting each new phase of a multi-step task, run a full checkpoint: the tests (if the project has any), all work saved in git, and a 3-line status summary. Do not proceed until green.

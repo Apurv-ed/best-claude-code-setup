@@ -1,120 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Code Setup Wizard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code, set up properly | Apurv</title>
+<meta name="description" content="One copy-paste makes Claude Code safer, easier on your plan, and up to date with how experienced builders work. No tech background needed. Free.">
+<meta property="og:title" content="Claude Code, set up properly">
+<meta property="og:description" content="One copy-paste makes Claude Code safer, easier on your plan, and up to date with how experienced builders work. No tech background needed. Free.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    color: #1a1a2e;
-    line-height: 1.6;
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 60px 30px;
-    background: #fff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  :root {
+    --yellow: #f6df2f; --black: #0a0a0a; --dark: #1a1a1a; --muted: #666666;
+    --mid: #e0e0e0; --light: #f5f5f5; --off: #fafafa; --white: #ffffff;
+    --display: "Playfair Display", Georgia, serif;
+    --body: "DM Sans", -apple-system, sans-serif;
+    --mono: "DM Mono", ui-monospace, Menlo, monospace;
   }
-  h1 {
-    font-size: 28px;
-    text-align: center;
-    margin-bottom: 8px;
-    font-weight: 700;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--white); color: var(--dark); font: 300 1.0625rem/1.7 var(--body); -webkit-font-smoothing: antialiased; }
+  body::after { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .02; z-index: 50;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  ::selection { background: var(--yellow); color: var(--black); }
+  a { color: inherit; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  nav { position: absolute; top: 0; left: 0; right: 0; padding: 28px 0; z-index: 2; }
+  nav .wrap { display: flex; justify-content: space-between; align-items: center; }
+  .wordmark { font: 500 .8rem var(--mono); letter-spacing: .15em; text-decoration: none; color: var(--white); }
+  .navlink { font: 400 .7rem var(--mono); letter-spacing: .2em; text-transform: uppercase; color: #bbbbbb; text-decoration: none; }
+  .navlink:hover { color: var(--yellow); }
+  .label { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .label::before { content: ""; width: 2rem; height: 1px; background: var(--yellow); }
+  .label span { font: 400 .65rem var(--mono); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+  h1, h2 { font-family: var(--display); font-weight: 700; color: var(--black); line-height: 1.12; }
+  h1 { font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 20px; }
+  h2 { font-size: 2rem; margin-bottom: 16px; }
+  h1 em, h2 em { font-style: italic; }
+  .hero { background: var(--black); color: #d8d8d8; padding: 148px 0 96px; }
+  .hero h1 { color: var(--white); }
+  .hero .label span { color: #9a9a9a; }
+  .hero .sub { font-size: 1.2rem; max-width: 620px; margin-bottom: 36px; color: #d8d8d8; }
+  .note { font: 400 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #9a9a9a; margin-top: 18px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; font: 500 .75rem var(--mono); letter-spacing: .18em; text-transform: uppercase;
+         padding: 16px 26px; border: 1px solid var(--black); background: transparent; color: var(--black); cursor: pointer; text-decoration: none;
+         transition: background .15s, color .15s, border-color .15s; }
+  .btn:hover, .btn:focus-visible { background: var(--yellow); border-color: var(--yellow); color: var(--black); outline: none; }
+  .hero .btn { border-color: var(--white); color: var(--white); }
+  .hero .btn:hover, .hero .btn:focus-visible { color: var(--black); border-color: var(--yellow); }
+  .btn.solid { background: var(--yellow); border-color: var(--yellow); color: var(--black); }
+  .btn.solid:hover { background: var(--white); border-color: var(--white); }
+  section.block { padding: 64px 0; border-top: 1px solid var(--mid); }
+  .lead { font-size: 1.15rem; max-width: 640px; }
+  .lead + .lead { margin-top: 16px; }
+  .benefits { list-style: none; margin-top: 36px; display: grid; gap: 0; }
+  .benefits li { display: grid; grid-template-columns: 56px 1fr; padding: 24px 0; border-top: 1px solid var(--mid); }
+  .benefits li:last-child { border-bottom: 1px solid var(--mid); }
+  .num { font: 400 .75rem var(--mono); color: var(--muted); letter-spacing: .1em; padding-top: 6px; }
+  .benefits h3 { font: 500 1.15rem var(--body); color: var(--black); margin-bottom: 4px; }
+  .steps { list-style: none; counter-reset: s; margin: 32px 0 28px; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 56px 1fr; padding: 14px 0; }
+  .steps li::before { content: "0" counter(s); font: 400 .75rem var(--mono); color: var(--muted); padding-top: 5px; }
+  .steps strong { font-weight: 500; color: var(--black); }
+  .prompt { border: 1px solid var(--black); background: var(--off); }
+  .prompt-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mid); padding: 10px 16px; }
+  .prompt-head span { font: 400 .65rem var(--mono); letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
+  .prompt pre { font: 400 .9rem/1.65 var(--mono); white-space: pre-wrap; word-break: break-word; padding: 20px 16px; color: var(--black); }
+  .copy-small { font: 500 .65rem var(--mono); letter-spacing: .18em; text-transform: uppercase; background: none; border: 1px solid var(--black); padding: 8px 12px; cursor: pointer; }
+  .copy-small:hover, .copy-small:focus-visible { background: var(--yellow); border-color: var(--yellow); outline: none; }
+  .checks { list-style: none; margin-top: 28px; }
+  .checks li { padding: 12px 0 12px 28px; position: relative; border-top: 1px solid var(--mid); }
+  .checks li::before { content: ""; position: absolute; left: 0; top: 24px; width: 12px; height: 1px; background: var(--black); }
+  details { border-top: 1px solid var(--mid); }
+  details:last-of-type { border-bottom: 1px solid var(--mid); }
+  summary { cursor: pointer; list-style: none; padding: 20px 32px 20px 0; position: relative; font-weight: 500; color: var(--black); }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; position: absolute; right: 0; top: 18px; font: 400 1.1rem var(--mono); }
+  details[open] summary::after { content: "-"; }
+  details p { padding: 0 0 22px; max-width: 680px; }
+  .about { display: grid; grid-template-columns: 96px 1fr; gap: 28px; align-items: start; }
+  .about img { width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--yellow); object-fit: cover; }
+  .final { background: var(--black); color: #d8d8d8; padding: 88px 0; text-align: left; }
+  .final h2 { color: var(--white); }
+  .final p { max-width: 560px; margin-bottom: 32px; }
+  footer { padding: 32px 0 48px; font: 400 .7rem var(--mono); letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
+  footer a { text-decoration: none; } footer a:hover { color: var(--black); background: var(--yellow); }
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: var(--black); color: var(--white);
+           font: 500 .7rem var(--mono); letter-spacing: .18em; text-transform: uppercase; padding: 14px 20px; border-left: 3px solid var(--yellow);
+           opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 60; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 640px) {
+    .hero { padding: 120px 0 72px; }
+    section.block { padding: 48px 0; }
+    .benefits li, .steps li { grid-template-columns: 40px 1fr; }
+    .about { grid-template-columns: 1fr; }
+    .btn { width: 100%; justify-content: center; }
   }
-  .subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 40px;
-    font-size: 16px;
-  }
-  .question {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 24px;
-    color: #333;
-  }
-  .card {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 28px 24px;
-    margin: 14px 0;
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
-    cursor: pointer;
-  }
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  }
-  .card.recommended {
-    border-color: #4a7c59;
-    background: #f8fdf9;
-  }
-  .card.recommended:hover { border-color: #3a6349; }
-  .card.existing { border-color: #d4a574; background: #fffcf8; }
-  .card.existing:hover { border-color: #b8895d; }
-
-  .card h2 {
-    font-size: 17px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .card.recommended h2 { color: #3a6349; }
-  .card.existing h2 { color: #96652e; }
-  .card p { font-size: 14px; color: #555; line-height: 1.5; }
-
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: #4a7c59;
-    color: #fff;
-  }
-
-  .footer {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 13px;
-    color: #999;
-  }
-  .footer a { color: #888; text-decoration: none; }
-  .footer a:hover { text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
 
-  <h1>Claude Code Setup</h1>
-  <p class="subtitle">Get optimized settings in 10 minutes</p>
-
-  <p class="question">Do you have existing Claude Code settings you want to keep?</p>
-
-  <a href="step1-install.html" class="card recommended">
-    <h2>No / I'm not sure <span class="badge">Recommended</span></h2>
-    <p>Use our recommended setup. One command installs everything - optimized configuration, safety wrapper, token savings, and plugins. Your existing files are backed up.</p>
-  </a>
-
-  <a href="step1-smart.html" class="card existing">
-    <h2>Yes, I have settings I want to keep</h2>
-    <p>Claude will analyze your current setup, show what's recommended vs what you have, and only add what's missing. Nothing gets overwritten without your approval.</p>
-  </a>
-
-  <div class="footer">
-    <p>Already set up? Read the <a href="claude-code-best-practices.html">Best Practices Guide</a> to save tokens and reduce costs.</p>
+<nav aria-label="Site">
+  <div class="wrap">
+    <a class="wordmark" href="https://apurv.org">APURV</a>
+    <a class="navlink" href="#how">How it works</a>
   </div>
+</nav>
 
+<header class="hero">
+  <div class="wrap">
+    <div class="label"><span>Claude Code setup</span></div>
+    <h1>Claude Code, <em>set up properly.</em></h1>
+    <p class="sub">One copy-paste makes Claude Code safer, easier on your plan, and working the way experienced builders work. No tech background needed.</p>
+    <button class="btn copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
+    <p class="note">Free &middot; About 2 minutes &middot; Your current settings are backed up first</p>
+  </div>
+</header>
+
+<main>
+  <section class="block" aria-labelledby="why">
+    <div class="wrap">
+      <div class="label"><span>Why</span></div>
+      <h2 id="why">Powerful out of the box. Also a little reckless.</h2>
+      <p class="lead">Claude Code can build almost anything. Left on its defaults, it can also delete a folder it shouldn't, burn through your plan on busywork, and forget what you agreed on yesterday.</p>
+      <p class="lead">Most people never change those defaults, because nobody tells them what to change. I use Claude Code every day and keep tuning it. This is that setup, packaged so you can have it in one step.</p>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="get">
+    <div class="wrap">
+      <div class="label"><span>What you get</span></div>
+      <h2 id="get">Five things change the moment you install it.</h2>
+      <ul class="benefits">
+        <li><span class="num">01</span><div><h3>Brakes on the dangerous stuff</h3><p>Hard blocks on the commands that do the most damage, like wiping whole folders or overwriting your project's history. A built-in safety check stops other risky moves without asking you about every small step.</p></div></li>
+        <li><span class="num">02</span><div><h3>Your plan goes further</h3><p>Leaner instructions, the right model for each job, and habits that avoid wasted work. You get more done before you hit your limits.</p></div></li>
+        <li><span class="num">03</span><div><h3>It works like a careful professional</h3><p>Claude is set up to plan before it builds, tests what it made, double-checks before it says "done", and keeps notes so the next session picks up where you left off.</p></div></li>
+        <li><span class="num">04</span><div><h3>Your private things stay private</h3><p>Rules that keep passwords and keys out of your code, and personal details off anything public.</p></div></li>
+        <li><span class="num">05</span><div><h3>It keeps getting better</h3><p>I update it as Claude Code changes and as better practices appear. Updates reach you automatically. You never reinstall anything.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="label"><span>How it works</span></div>
+      <h2 id="how-h">Three steps. Claude does the setup.</h2>
+      <ol class="steps">
+        <li><div><strong>Copy the prompt below.</strong> One click.</div></li>
+        <li><div><strong>Paste it into Claude Code</strong> and press Enter.</div></li>
+        <li><div><strong>Read what Claude says it will change, then say yes.</strong> It does the rest and tells you when it's finished.</div></li>
+      </ol>
+      <div class="prompt">
+        <div class="prompt-head"><span>Paste this into Claude Code</span><button class="copy-small copy-btn" type="button" data-copy="prompt">Copy</button></div>
+        <pre id="prompt">Set up my Claude Code with https://github.com/Apurv-ed/best-claude-code-setup . First explain in plain words what it will change on my computer and wait for my OK. Then back up my current Claude settings, clone the repo and run its installer (python3 claude-setup.py), and tell me what changed.</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="safe">
+    <div class="wrap">
+      <div class="label"><span>What happens on your computer</span></div>
+      <h2 id="safe">Nothing changes until you say yes.</h2>
+      <ul class="checks">
+        <li>Claude explains every change in plain words first and waits for your OK.</li>
+        <li>Your current settings are saved before anything is touched.</li>
+        <li>Your own instructions to Claude are left alone. The new rules live in a separate file.</li>
+        <li>Changed your mind? Ask Claude to switch any part of it off.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="faq">
+    <div class="wrap">
+      <div class="label"><span>Questions</span></div>
+      <h2 id="faq">Before you paste.</h2>
+      <details><summary>Do I need to be technical?</summary><p>No. You copy one prompt and answer yes when Claude asks. Claude handles every technical step and tells you what it did.</p></details>
+      <details><summary>What do I need first?</summary><p>Claude Code installed on your computer, with a Claude plan that includes it. That's all.</p></details>
+      <details><summary>Does it work on Windows?</summary><p>Yes, on Mac and Windows. On Windows a few of the automatic helpers need Git for Windows and Python. If they're missing, Claude will tell you and help you install them.</p></details>
+      <details><summary>Is it free?</summary><p>Yes. Free and open source.</p></details>
+      <details><summary>How do updates work?</summary><p>Automatically. New versions download in the background while you work and are active the next time you open Claude Code. There's nothing to click.</p></details>
+      <details><summary>Can I trust it?</summary><p>Every line is public on GitHub, so you or anyone you trust can read it. Every update is automatically checked for passwords and personal details before it goes out.</p></details>
+      <details><summary>Can I undo it?</summary><p>Yes. Your old settings are saved before anything changes. Ask Claude to restore them, or to turn off only the part you don't want.</p></details>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="who">
+    <div class="wrap">
+      <div class="label"><span>Who made this</span></div>
+      <div class="about">
+        <img src="images/profile.webp" alt="Apurv" width="96" height="96">
+        <div>
+          <h2 id="who">Apurv.</h2>
+          <p class="lead">Operator and company builder. 14 years building, now rebuilding everything with AI. I built this for myself first, then for the people around me. It's what I'd set up for you if I were sitting next to you.</p>
+          <p style="margin-top:18px"><a class="btn" href="https://apurv.org">More at apurv.org</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final" aria-labelledby="final-h">
+    <div class="wrap">
+      <div class="label"><span>Ready</span></div>
+      <h2 id="final-h">Two minutes from now, your Claude is safer and sharper.</h2>
+      <p>Copy the prompt, paste it into Claude Code, say yes.</p>
+      <button class="btn solid copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Made by <a href="https://apurv.org">Apurv</a></span>
+    <span><a href="https://github.com/Apurv-ed/best-claude-code-setup">Source on GitHub</a></span>
+    <span><a href="wizard.html">Step-by-step guide</a></span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Copied. Now paste it into Claude Code.</div>
+
+<script>
+  (function () {
+    var text = document.getElementById("prompt").textContent.trim();
+    var toast = document.getElementById("toast");
+    var timer;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(timer);
+      timer = setTimeout(function () { toast.classList.remove("show"); }, 2600);
+    }
+    function fallbackCopy() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+    document.querySelectorAll(".copy-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var done = function () { showToast("Copied. Now paste it into Claude Code."); };
+        var fail = function () { showToast(fallbackCopy() ? "Copied. Now paste it into Claude Code." : "Select the prompt text and copy it by hand."); };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(done, fail);
+        } else { fail(); }
+      });
+    });
+  })();
+</script>
 </body>
 </html>

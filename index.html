@@ -87,6 +87,12 @@
   summary::after { content: "+"; position: absolute; right: 0; top: 18px; font: 400 1.1rem var(--mono); }
   details[open] summary::after { content: "-"; }
   details p { padding: 0 0 22px; max-width: 680px; }
+  .cmds-title { font: 500 1.15rem var(--body); color: var(--black); margin: 40px 0 4px; }
+  .cmds { margin-top: 8px; }
+  .cmds div { display: grid; grid-template-columns: 180px 1fr; gap: 0 24px; padding: 14px 0; border-top: 1px solid var(--mid); }
+  .cmds div:last-child { border-bottom: 1px solid var(--mid); }
+  .cmds dt code { font: 500 .9rem var(--mono); color: var(--black); background: var(--light); padding: 3px 8px; white-space: nowrap; }
+  .cmds dd { margin: 0; }
   .about { display: grid; grid-template-columns: 96px 1fr; gap: 28px; align-items: start; }
   .about img { width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--yellow); object-fit: cover; }
   .final { background: var(--black); color: #d8d8d8; padding: 88px 0; text-align: left; }
@@ -103,6 +109,7 @@
     .hero { padding: 120px 0 72px; }
     section.block { padding: 48px 0; }
     .benefits li, .steps li { grid-template-columns: 40px 1fr; }
+    .cmds div { grid-template-columns: 1fr; gap: 6px; }
     .about { grid-template-columns: 1fr; }
     .btn { width: 100%; justify-content: center; }
   }
@@ -114,7 +121,10 @@
 <nav aria-label="Site">
   <div class="wrap">
     <a class="wordmark" href="https://apurv.org">APURV</a>
-    <a class="navlink" href="#how">How it works</a>
+    <div class="cta-row">
+      <a class="navlink" href="#commands">Cheat sheet</a>
+      <a class="navlink" href="#how">How it works</a>
+    </div>
   </div>
 </nav>
 
@@ -185,6 +195,45 @@
         <li>Your own instructions to Claude are left alone. The new rules live in a separate file.</li>
         <li>Changed your mind? Ask Claude to switch any part of it off.</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="block" id="commands" aria-labelledby="commands-h">
+    <div class="wrap">
+      <div class="label"><span>Cheat sheet</span></div>
+      <h2 id="commands-h">What to type, once it's installed.</h2>
+      <p class="lead">Bookmark this page. Inside Claude Code, type <strong>commands</strong> to see the same list.</p>
+      <h3 class="cmds-title">Added by this setup</h3>
+      <dl class="cmds">
+        <div><dt><code>update docs</code></dt><dd>Checks and tidies this project's notes. Nothing goes to GitHub.</dd></div>
+        <div><dt><code>update github</code></dt><dd>Tidies the notes, then saves your work to GitHub.</dd></div>
+        <div><dt><code>deploy</code></dt><dd>Runs update github, then publishes the project if it has a publish step.</dd></div>
+        <div><dt><code>handoff</code></dt><dd>Writes a note so a fresh session continues where you left off. Use it once /context shows about 40% full.</dd></div>
+        <div><dt><code>ooc</code></dt><dd>Means "running out of context". Saves a handoff note right away.</dd></div>
+        <div><dt><code>read handoff</code></dt><dd>Continues from the last handoff note. Type it at the start of a new session.</dd></div>
+        <div><dt><code>grill me</code></dt><dd>Questions your plan until every decision is clear.</dd></div>
+        <div><dt><code>grade this</code></dt><dd>Checks the work against a checklist and improves it until it passes.</dd></div>
+        <div><dt><code>fix all tests</code></dt><dd>Fixes failing tests and re-runs them until they all pass.</dd></div>
+        <div><dt><code>commands</code></dt><dd>Shows this list inside Claude Code. <span style="white-space:nowrap">/ap-optimal-claude:commands</span> also works.</dd></div>
+      </dl>
+      <h3 class="cmds-title">Built into Claude Code</h3>
+      <dl class="cmds">
+        <div><dt><code>/clear</code></dt><dd>Starts a new conversation with a clean slate. Use it between tasks to keep Claude sharp and save usage.</dd></div>
+        <div><dt><code>/resume</code></dt><dd>Reopens an earlier conversation.</dd></div>
+        <div><dt><code>/model</code></dt><dd>Switches to a different Claude model.</dd></div>
+        <div><dt><code>/usage</code></dt><dd>Shows how much of your plan you have used, and the cost.</dd></div>
+        <div><dt><code>/context</code></dt><dd>Shows how full this conversation is.</dd></div>
+        <div><dt><code>/rewind</code></dt><dd>Goes back to an earlier point in the conversation, with the option to undo code changes too.</dd></div>
+        <div><dt><code>/mcp</code></dt><dd>Manages add-on connections and their sign-ins. Sign in to Context7 (up-to-date library docs) once.</dd></div>
+        <div><dt><code>/doctor</code></dt><dd>Runs a checkup on your setup.</dd></div>
+      </dl>
+      <h3 class="cmds-title">Keys and symbols</h3>
+      <dl class="cmds">
+        <div><dt><code>Esc</code></dt><dd>Stops Claude mid-answer so you can redirect it. Work done so far is kept.</dd></div>
+        <div><dt><code>Shift+Tab</code></dt><dd>Cycles through permission modes, including plan mode, where Claude plans before changing anything. On Windows, use Alt+M if Shift+Tab does nothing.</dd></div>
+        <div><dt><code>!</code></dt><dd>Runs a terminal command when typed at the start of a line. Claude sees the output.</dd></div>
+        <div><dt><code>@</code></dt><dd>Points Claude at a file. Type it, then pick the file from the list.</dd></div>
+      </dl>
     </div>
   </section>
 

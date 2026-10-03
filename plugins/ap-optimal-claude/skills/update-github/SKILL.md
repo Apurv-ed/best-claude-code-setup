@@ -1,6 +1,6 @@
 ---
 name: update-github
-description: Use when the user says "update github" (or before "deploy"). Updates each changed fact in its one home doc, runs the doc check, commits and pushes.
+description: Use when the user says "update github" (or before "deploy"). Does the quick doc update (each changed fact in its one home doc), runs the doc check on changed files, commits and pushes.
 ---
 
 # Update GitHub
@@ -10,8 +10,8 @@ If the project CLAUDE.md defines "update github" differently, follow that instea
 Steps in order:
 
 1. List what this session changed (`git status`, `git diff --stat HEAD`, the conversation).
-2. Update each changed fact in its ONE home (see the project-docs skill): STATUS.md (Now / Next / Blockers, goal if it moved), CHANGELOG.md (one dated entry), docs/decisions.md (only for real decisions), README.md / CLAUDE.md (only if setup, usage or conventions changed). Delete or correct any other file that now states something stale. Do not touch files that did not change; no filler "no changes" entries.
-3. Run the doc check from the project root: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doc_check.py"`. Fix every ERROR before committing.
+2. Do the quick doc update from the project-docs skill: put each fact this session changed in its one home (STATUS.md, CHANGELOG.md under [Unreleased], a decision file for real decisions (in a project that still has the single `docs/decisions.md`, append to it in its existing style and never start `docs/decisions/` beside it), README.md / CLAUDE.md when setup, usage or conventions changed). The full audit runs only when the user says "update docs".
+3. Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doc_check.py" --changed` from the project root and fix every ERROR it reports.
 4. Commit with a thorough message (use the commit-rules skill), then `git push origin HEAD`.
 5. If work is unfinished, invoke the handoff skill; otherwise STATUS.md already is the handoff.
 

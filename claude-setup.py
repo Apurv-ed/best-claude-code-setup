@@ -584,10 +584,10 @@ def setup():
     print("  ccx --resume    Resume your last session")
     print("  claude          Same thing (settings.json sets the permission mode)")
 
-    print("\n--- Recommended plugins (run inside a cc session) ---")
-    print('  Type: /install-plugin superpowers      (structured workflows)')
-    print('  Type: /install-plugin context7          (latest library docs)')
-    print('  Type: /install-plugin code-simplifier   (code quality reviews)')
+    print("\n--- Plugins ---")
+    print("  Installed for you: superpowers (structured workflows), context7 (latest library docs;")
+    print("  sign in once with /mcp). Optional, inside a Claude session:")
+    print("  /plugin install code-simplifier@claude-plugins-official   (code quality reviews)")
 
     if IS_MAC:
         print("\n--- Mac notifications ---")

@@ -84,8 +84,8 @@ introduce violations either.
 - Every project has a STATUS.md whose first section is the End Goal (north star), then Now, Next, Blockers. It is loaded into every session, so keep it under 7KB. If the goal is missing or unclear, ask me and write it before other work. Judge every task against it, flag work that does not serve it, and update the goal the moment it changes.
 - Each kind of fact has exactly ONE home. Other files link to it; they never restate it:
   - goal, current state, next steps, blockers: `STATUS.md`
-  - what changed and when: `CHANGELOG.md` (newest first, written for humans, not a git log)
-  - why a decision was made: `docs/decisions.md` (dated entries; a reversed decision is marked superseded, not rewritten)
+  - what changed and when: `CHANGELOG.md` (Keep a Changelog format: [Unreleased] on top, written for humans, not a git log)
+  - why a decision was made: `docs/decisions/` (one file per decision, standard MADR format; a reversed decision is marked superseded, not rewritten; a project that still has the single `docs/decisions.md` keeps appending to it and never starts `docs/decisions/` beside it)
   - how to set up and use the project: `README.md`
   - instructions for Claude (commands, conventions, gotchas): `CLAUDE.md`
   - dated research and transcripts: `docs/research/`, `docs/transcriptions/` (written once, then left alone)
@@ -119,6 +119,7 @@ Invoke the startup skill immediately (Skill tool, skill="ap-optimal-claude:start
 - Before committing, scan ALL .md files in the project and update every one that is stale - no fixed list, check everything that exists.
 - After completing a logical unit of work, mention once that it is a good time to commit. Do not repeat.
 - When I say "update github": invoke the ap-optimal-claude:update-github skill (project CLAUDE.md may override it).
+- When I say "update docs": do the full documentation pass in the ap-optimal-claude:project-docs skill (it updates and checks the docs; it does not push). "update github" does the quick doc update and then commits and pushes.
 - When I say "deploy": run the ap-optimal-claude:update-github skill first, then run the deployment (project CLAUDE.md may define a project-specific deploy).
 - Enable Dependabot on all new GitHub repos.
 

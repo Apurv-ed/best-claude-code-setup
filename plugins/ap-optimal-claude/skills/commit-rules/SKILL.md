@@ -33,8 +33,8 @@ files that haven't changed - no boilerplate updates, no copying a fact into a
 second file.
 
 - **STATUS.md** - goal, Now / Next, blockers changed?
-- **CHANGELOG.md** - one dated entry for user-visible changes
-- **docs/decisions.md** - only when a real decision (with a reason) was made
+- **CHANGELOG.md** - an entry under [Unreleased] for user-visible changes
+- **docs/decisions/** - a new decision file, only when a real decision (with a reason) was made
 - **README.md / CLAUDE.md** - only if setup, usage or conventions changed
 - **METRICS.md** - only if the project measures something and it moved
 

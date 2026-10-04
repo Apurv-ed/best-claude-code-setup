@@ -15,10 +15,13 @@ Steps:
    copy of a skill some installer version wrote (the plugin ships the current version).
 4. Settings: add any missing baseline deny rule (add-only), keep the scalar MANAGED keys,
    and ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected).
+5. Status line: copy scripts/context_meter.py to ~/.claude/scripts/ap-context-meter.py and,
+   only when the status line is still the setup's default, wrap it so the context-size hook
+   can read the window numbers. A personal status line is never touched.
 
 Usage: python3 sync_setup.py   (needs CLAUDE_PLUGIN_ROOT, or pass --plugin-root DIR)
 """
-import hashlib, json, os, re, sys, time
+import hashlib, json, os, re, shutil, sys, time
 from pathlib import Path
 
 MANAGED_SCALARS = {"skillListingBudgetFraction": 0.02}
@@ -26,6 +29,8 @@ RULES_NAME = "ap-optimal-claude.md"
 RULES_HEADER = ("<!-- Managed by the ap-optimal-claude plugin: refreshed every session, edits here are overwritten.\n"
                 "     Put personal rules in another file in this folder. -->\n# Claude Code Instructions (team rules)\n\n")
 MIGRATION_MARKER = "migrations.json"
+DEFAULT_STATUSLINE = "npx -y ccstatusline@2"  # what claude-setup.py installs
+METER_NAME = "ap-context-meter.py"
 
 
 def platform_name():
@@ -148,13 +153,36 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
         tmp.replace(path)
 
 
+def sync_statusline(root: Path, claude_dir: Path, notes: list) -> None:
+    path = claude_dir / "settings.json"
+    if not path.exists():
+        return
+    src = root / "scripts" / "context_meter.py"
+    dest = claude_dir / "scripts" / METER_NAME
+    if not dest.exists() or dest.read_bytes() != src.read_bytes():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(src.read_bytes())
+    s = json.loads(path.read_text(encoding="utf-8"))
+    line = s.get("statusLine")
+    python = shutil.which("python3") or shutil.which("python")
+    if not isinstance(line, dict) or line.get("command") != DEFAULT_STATUSLINE or not python:
+        return
+    # If python cannot start, the shell falls back to the plain status bar.
+    line["command"] = f'"{python}" "{dest}" statusline "{DEFAULT_STATUSLINE}" || {DEFAULT_STATUSLINE}'
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(s, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+    notes.append("status bar now also lets Claude suggest a fresh start once a conversation passes 40% full")
+
+
 def run(root: Path, claude_dir: Path, data_dir: Path) -> list:
     notes = []
     legacy_file = root / "settings" / "legacy-installer.json"
     legacy = json.loads(legacy_file.read_text()) if legacy_file.exists() else {}
     for step in (lambda: migrate_claude_md(claude_dir, sync_rules(root, claude_dir, notes), legacy, notes),
                  lambda: remove_duplicate_skills(claude_dir, legacy, notes),
-                 lambda: sync_settings(root, claude_dir, data_dir, notes)):
+                 lambda: sync_settings(root, claude_dir, data_dir, notes),
+                 lambda: sync_statusline(root, claude_dir, notes)):
         try:
             step()
         except Exception as exc:  # fail silent per step, but say so

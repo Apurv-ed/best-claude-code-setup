@@ -66,6 +66,12 @@
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/memory-write-check.sh",
             "statusMessage": "Checking memory..."
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/context-size-note.sh",
+            "timeout": 5,
+            "statusMessage": "Checking conversation size..."
           }
         ]
       }

@@ -110,7 +110,7 @@ introduce violations either.
 - When the user provides any audio, video, call recording, or transcript, invoke the save-transcription skill automatically - it files it under `docs/transcriptions/`.
 
 ## Context Window Monitoring
-- Do NOT auto-trigger handoff warnings. The user monitors context % in the status bar and will type "handoff" when ready.
+- One task per session keeps quality high. When a hook reports (MEASURED) that the conversation passed 40% full, or when I start an unrelated task in a long conversation, suggest once, in one line: type `end session`, then `/clear`. Never repeat it in that session, and never add other handoff warnings.
 
 ### When I type "handoff" or "handoff <project>"
 Invoke the handoff skill (Skill tool, skill="ap-optimal-claude:handoff"). If a project name is given (e.g. "handoff my-app" - any folder under ~/Documents/dev/), the skill writes to `~/Documents/dev/<project>/docs/SESSION_HANDOFF.md` using git state from that directory. If no project name, writes to the current project. Pasting the last ~50 lines of a filled-up session helps capture mid-debug state, but is not required - the skill can reconstruct from git diff + log alone.

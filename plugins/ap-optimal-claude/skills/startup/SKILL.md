@@ -20,4 +20,4 @@ From the available skills list, pick 3-5 most relevant to this project and list 
 
 One line: `Session ready | memory: [auto-loaded]`
 
-Note: context usage is shown in the status line. Quality degrades past ~40% — if it reaches 40%, the user types `handoff` immediately. Do not schedule reminder wakeups - they re-read the whole conversation at cold-cache prices.
+Note: context usage is shown in the status line. Long sessions cost more of the plan with every message and can drift; at 40% the user types `handoff`. Do not schedule reminder wakeups - they re-read the whole conversation at cold-cache prices.

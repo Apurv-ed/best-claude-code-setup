@@ -13,6 +13,7 @@ Show the user the tables below as they are. Keep it plain: no extra jargon, no l
 |---|---|
 | `update docs` | Checks and tidies this project's notes. Nothing goes to GitHub. |
 | `update github` | Tidies the notes, then saves your work to GitHub. |
+| `end session` | Wraps up: tidies all the notes, saves a handoff note if work is unfinished, then saves everything to GitHub. |
 | `deploy` | Runs update github, then publishes the project if it has a publish step. |
 | `handoff` | Writes a note so a fresh session continues where you left off. Use it once /context shows about 40% full. |
 | `ooc` | Means "running out of context". Saves a handoff note right away. |

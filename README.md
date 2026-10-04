@@ -20,7 +20,7 @@ Your existing settings are backed up before anything changes, your own `~/.claud
 
 Step-by-step guide designed for non-technical users. Takes about 10 minutes.
 
-Open [`index.html`](index.html) in your browser or view online: [apurv-ed.github.io/best-claude-code-setup](https://apurv-ed.github.io/best-claude-code-setup/)
+Open [`index.html`](index.html) in your browser or view online: [apurv.org/best-claude-code-settings/](https://apurv.org/best-claude-code-settings/)
 
 The wizard walks you through:
 1. Choosing between fresh install or smart optimizer
@@ -58,7 +58,7 @@ Claude will automatically walk you through the recommendations.
 
 Open [`claude-code-best-practices.html`](claude-code-best-practices.html) in your browser for a visual, non-technical guide. Save as PDF with Cmd+P / Ctrl+P.
 
-Or view it online: [apurv-ed.github.io/best-claude-code-setup/claude-code-best-practices.html](https://apurv-ed.github.io/best-claude-code-setup/claude-code-best-practices.html)
+Or view it online: [apurv.org/best-claude-code-settings/claude-code-best-practices.html](https://apurv.org/best-claude-code-settings/claude-code-best-practices.html)
 
 ## What Gets Configured
 

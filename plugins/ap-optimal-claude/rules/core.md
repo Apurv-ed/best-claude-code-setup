@@ -41,6 +41,13 @@ in your response - don't restructure unrequested code, but don't silently
 introduce violations either.
 
 **Always:**
+- **Simplest thing first** (adapted from the ponytail ladder, MIT,
+  github.com/DietrichGebert/ponytail): after understanding the problem, stop
+  at the first option that works: not needed (say so) > already in this
+  codebase > standard library > native platform feature (e.g.
+  `<input type="date">`, CSS, a database constraint) > an installed
+  dependency > a few lines of new code. Never cut validation, error
+  handling, security or tests to get there.
 - **High Cohesion**: each function/class/module does one thing. If you can
   describe it with "and", split it.
 - **Low Coupling**: application modules interact through minimal, well-defined
@@ -121,6 +128,7 @@ Invoke the startup skill immediately (Skill tool, skill="ap-optimal-claude:start
 - When I say "update github": invoke the ap-optimal-claude:update-github skill (project CLAUDE.md may override it).
 - When I say "update docs": do the full documentation pass in the ap-optimal-claude:project-docs skill (it updates and checks the docs; it does not push). "update github" does the quick doc update and then commits and pushes.
 - When I type "commands": show the ap-optimal-claude:commands cheat sheet.
+- When I type "end session": invoke the ap-optimal-claude:end-session skill (full docs pass, a handoff note only if work is unfinished, then update github).
 - When I say "deploy": run the ap-optimal-claude:update-github skill first, then run the deployment (project CLAUDE.md may define a project-specific deploy).
 - Enable Dependabot on all new GitHub repos.
 

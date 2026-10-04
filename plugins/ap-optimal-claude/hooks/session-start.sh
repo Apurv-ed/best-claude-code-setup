@@ -69,7 +69,7 @@ fi
 # Append instruction Claude will actually see (additionalContext, not systemMessage)
 STARTUP_MSG=$'\n[SESSION START]'
 [ -n "$REPO_CREATED" ] && STARTUP_MSG="$STARTUP_MSG $REPO_CREATED"
-STARTUP_MSG="$STARTUP_MSG Invoke the startup skill now (Skill tool, skill=\"ap-optimal-claude:startup\") to list relevant skills. IMPORTANT: Watch the context % in the status bar - quality degrades past 40%. Type 'handoff' the moment it hits 40%, before continuing work."
+STARTUP_MSG="$STARTUP_MSG Invoke the startup skill now (Skill tool, skill=\"ap-optimal-claude:startup\") to list relevant skills. Watch the context % in the status bar. Long sessions cost more of the plan with every message and can drift; type 'handoff' at 40% context."
 CONTEXT="$CONTEXT$STARTUP_MSG"
 
 printf '%s' "$CONTEXT" | $PYTHON -c "

@@ -92,6 +92,7 @@
   .cmds div { display: grid; grid-template-columns: 180px 1fr; gap: 0 24px; padding: 14px 0; border-top: 1px solid var(--mid); }
   .cmds div:last-child { border-bottom: 1px solid var(--mid); }
   .cmds dt code { font: 500 .9rem var(--mono); color: var(--black); background: var(--light); padding: 3px 8px; white-space: nowrap; }
+  li p code { font: 500 .9em var(--mono); color: var(--black); background: var(--light); padding: 1px 6px; white-space: nowrap; }
   .cmds dd { margin: 0; }
   .about { display: grid; grid-template-columns: 96px 1fr; gap: 28px; align-items: start; }
   .about img { width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--yellow); object-fit: cover; }
@@ -115,7 +116,7 @@
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 </style>
-</head>
+<link rel="canonical" href="https://apurv.org/best-claude-code-settings/"><script>if(location.hostname.endsWith("github.io"))location.replace("https://apurv.org/best-claude-code-settings/"+location.pathname.replace(/^\/best-claude-code-setup\/?/,"")+location.search+location.hash)</script></head>
 <body>
 
 <nav aria-label="Site">
@@ -158,7 +159,7 @@
       <ul class="benefits">
         <li><span class="num">01</span><div><h3>Brakes on the dangerous stuff</h3><p>Hard blocks on the commands that do the most damage, like wiping whole folders or overwriting your project's history. A built-in safety check stops other risky moves without asking you about every small step.</p></div></li>
         <li><span class="num">02</span><div><h3>Your plan goes further</h3><p>Leaner instructions, the right model for each job, and habits that avoid wasted work. You get more done before you hit your limits.</p></div></li>
-        <li><span class="num">03</span><div><h3>It works like a careful professional</h3><p>Claude is set up to plan before it builds, tests what it made, double-checks before it says "done", and keeps notes so the next session picks up where you left off.</p></div></li>
+        <li><span class="num">03</span><div><h3>It works like a careful professional</h3><p>Claude is set up to plan before it builds, reach for the simplest fix that works instead of piling on code, test what it made, and double-check before it says "done". When you're finished, type <code>end session</code>: it tidies the notes and saves everything, so the next session picks up where you left off.</p></div></li>
         <li><span class="num">04</span><div><h3>Your private things stay private</h3><p>Rules that keep passwords and keys out of your code, and personal details off anything public.</p></div></li>
         <li><span class="num">05</span><div><h3>It keeps getting better</h3><p>I update it as Claude Code changes and as better practices appear. Updates reach you automatically. You never reinstall anything.</p></div></li>
       </ul>
@@ -207,6 +208,7 @@
       <dl class="cmds">
         <div><dt><code>update docs</code></dt><dd>Checks and tidies this project's notes. Nothing goes to GitHub.</dd></div>
         <div><dt><code>update github</code></dt><dd>Tidies the notes, then saves your work to GitHub.</dd></div>
+        <div><dt><code>end session</code></dt><dd>Wraps up: tidies all the notes, saves a handoff note if work is unfinished, then saves everything to GitHub.</dd></div>
         <div><dt><code>deploy</code></dt><dd>Runs update github, then publishes the project if it has a publish step.</dd></div>
         <div><dt><code>handoff</code></dt><dd>Writes a note so a fresh session continues where you left off. Use it once /context shows about 40% full.</dd></div>
         <div><dt><code>ooc</code></dt><dd>Means "running out of context". Saves a handoff note right away.</dd></div>

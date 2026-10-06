@@ -19,6 +19,7 @@ Show the user the tables below as they are. Keep it plain: no extra jargon, no l
 | `ooc` | Means "running out of context". Saves a handoff note right away. |
 | `read handoff` | Continues from the last handoff note. Type it at the start of a new session. |
 | `grill me` | Questions your plan until every decision is clear. |
+| `reaudit` | Several separate checkers, each taking one part of the work (for a website: the text, the videos, the live site in each browser), try to break it, and between them check that it does what you asked, works for real, is safe, and is the best way. Only proven problems count, and Claude fixes them. Add "project" to check the whole project. Uses more of your plan than a normal check. |
 | `grade this` | Checks the work against a checklist and improves it until it passes. |
 | `fix all tests` | Fixes failing tests and re-runs them until they all pass. |
 | `commands` | Shows this list inside Claude Code. /ap-optimal-claude:commands also works. |

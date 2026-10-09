@@ -146,7 +146,12 @@ Every commit must be thorough. Follow this format:
 
 ## No PII in Public-Facing Content
 - Public-facing means anything people outside can see: public repos and their commit messages (including commit messages that a deploy copies to a public repo), published sites and artifacts, public gists, package releases. Never put real names, emails, phone numbers, addresses, IPs, usernames or client names there. The one exception is my own name where I have chosen to publish under it.
-- Private repos and local files may contain PII. Before anything moves from private to public, check it for PII.
+- Private repos and local files: personal data is judged case by case, never a blanket "no PII", so a private project can keep the records it needs.
+  - Fine to save in full without asking: names, addresses, phone numbers, emails, bank account numbers, IBANs, policy and reference numbers, amounts, dates.
+  - Never saved anywhere, private or public: full card numbers (keep the last 4 digits only), CVV, card expiry next to a card number, PINs, one-time codes, security answers.
+  - Ask me once per project, then record the answer in that project's docs: government ID numbers (passport, national ID, tax ID), scanned ID documents, health records.
+  - A decision recorded in a project overrides this list for that project.
+- Before anything moves from private to public, or to another person or service, check it for personal data again.
 - API keys, tokens and passwords are secrets, not PII: never commit them anywhere, public or private.
 
 ## Command Style

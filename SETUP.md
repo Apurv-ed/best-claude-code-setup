@@ -6,7 +6,7 @@ Everything here was audited against official Anthropic docs and stress-tested by
 
 ## What changes for you
 
-- **Zero permission prompts.** No more pressing "Yes" 200 times a day. Fifteen deny rules block the dangerous commands (rm -rf, force push, reading your credentials) - everything else just runs.
+- **Zero permission prompts.** No more pressing "Yes" 200 times a day. Sixteen deny rules block the dangerous commands (rm -rf, force push, reading your credentials) - everything else just runs.
 - **Claude checks its own work.** A Stop hook forces a verify-review-complete pass whenever code was written, before Claude tells you it's done. Fewer "done!" messages that aren't.
 - **Claude stops repeating its helpers' guesses.** When Claude hands work to a helper agent and the helper reports back, Claude is told how much that helper actually looked at. If the helper opened nothing, Claude is told to check the claim before passing it on to you as fact. You won't see this happen - it works quietly in the background.
 - **Claude actually remembers corrections now.** Instead of a manual "lessons" file you had to remember existed, Claude saves what it learns to its own built-in memory automatically. If it forgets to save something worth remembering, a quiet nudge reminds it once per session - you won't see this either unless there's something to log.

@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Code, set up properly | Apurv</title>
-<meta name="description" content="One copy-paste makes Claude Code safer, easier on your plan, and up to date with how experienced builders work. No tech background needed. Free.">
-<meta property="og:title" content="Claude Code, set up properly">
-<meta property="og:description" content="One copy-paste makes Claude Code safer, easier on your plan, and up to date with how experienced builders work. No tech background needed. Free.">
+<title>Claude Code on God Mode | Apurv</title>
+<meta name="description" content="One copy-paste makes Claude Code safer, smarter, and more reliable. No tech background needed. Free.">
+<meta property="og:title" content="Claude Code on God Mode">
+<meta property="og:description" content="One copy-paste makes Claude Code safer, smarter, and more reliable. No tech background needed. Free.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,6 +62,11 @@
   section.block { padding: 64px 0; border-top: 1px solid var(--mid); }
   .lead { font-size: 1.15rem; max-width: 640px; }
   .lead + .lead { margin-top: 16px; }
+  .lead + .news, .news + .lead { margin-top: 16px; }
+  .news { max-width: 640px; padding-left: 1.2em; font-size: 1.05rem; }
+  .news li + li { margin-top: 8px; }
+  .news a { font-size: .85em; opacity: .7; white-space: nowrap; }
+  .proof { margin-top: 24px; max-width: 640px; font-size: .9rem; opacity: .75; }
   .benefits { list-style: none; margin-top: 36px; display: grid; gap: 0; }
   .benefits li { display: grid; grid-template-columns: 56px 1fr; padding: 24px 0; border-top: 1px solid var(--mid); }
   .benefits li:last-child { border-bottom: 1px solid var(--mid); }
@@ -87,6 +92,11 @@
   summary::after { content: "+"; position: absolute; right: 0; top: 18px; font: 400 1.1rem var(--mono); }
   details[open] summary::after { content: "-"; }
   details p { padding: 0 0 22px; max-width: 680px; }
+  .safe { margin-top: 48px; }
+  .safe .label { margin-bottom: 16px; }
+  .safe .cmds-title { margin-top: 0; }
+  .also { margin-top: 40px; }
+  .steps code { font: 500 .9em var(--mono); color: var(--black); background: var(--light); padding: 1px 6px; white-space: nowrap; }
   .cmds-title { font: 500 1.15rem var(--body); color: var(--black); margin: 40px 0 4px; }
   .cmds { margin-top: 8px; }
   .cmds div { display: grid; grid-template-columns: 180px 1fr; gap: 0 24px; padding: 14px 0; border-top: 1px solid var(--mid); }
@@ -102,6 +112,8 @@
   footer { padding: 32px 0 48px; font: 400 .7rem var(--mono); letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
   footer a { text-decoration: none; } footer a:hover { color: var(--black); background: var(--yellow); }
+  footer .credits { margin-top: 24px; font: 400 .8rem/1.6 var(--body); letter-spacing: 0; text-transform: none; }
+  footer .credits a { text-decoration: underline; }
   .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: var(--black); color: var(--white);
            font: 500 .7rem var(--mono); letter-spacing: .18em; text-transform: uppercase; padding: 14px 20px; border-left: 3px solid var(--yellow);
            opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 60; }
@@ -123,7 +135,7 @@
   <div class="wrap">
     <a class="wordmark" href="https://apurv.org">APURV</a>
     <div class="cta-row">
-      <a class="navlink" href="#commands">Cheat sheet</a>
+      <a class="navlink" href="#faq">Questions</a>
       <a class="navlink" href="#how">How it works</a>
     </div>
   </div>
@@ -132,13 +144,13 @@
 <header class="hero">
   <div class="wrap">
     <div class="label"><span>Claude Code setup</span></div>
-    <h1>Claude Code, <em>set up properly.</em></h1>
-    <p class="sub">One copy-paste makes Claude Code safer, easier on your plan, and working the way experienced builders work. No tech background needed.</p>
+    <h1>Claude Code <em>on God Mode.</em></h1>
+    <p class="sub">One copy-paste makes Claude Code safer, smarter, and more reliable. No tech background needed.</p>
     <div class="cta-row">
       <button class="btn solid copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
       <a class="textlink" href="wizard.html">Or follow the step-by-step guide</a>
     </div>
-    <p class="note">Free &middot; About 2 minutes &middot; Your current settings are backed up first</p>
+    <p class="note">Free &middot; Takes 2 minutes &middot; Undo changes any time</p>
   </div>
 </header>
 
@@ -147,8 +159,16 @@
     <div class="wrap">
       <div class="label"><span>Why</span></div>
       <h2 id="why">Powerful out of the box. Also a little reckless.</h2>
-      <p class="lead">Claude Code can build almost anything. Left on its defaults, it can also delete a folder it shouldn't, burn through your plan on busywork, and forget what you agreed on yesterday.</p>
-      <p class="lead">Most people never change those defaults, because nobody tells them what to change. I use Claude Code every day and keep tuning it. This is that setup, packaged so you can have it in one step.</p>
+      <p class="lead">Claude Code and tools like it can build almost anything. They have also made the news:</p>
+      <ul class="news">
+        <li>An AI agent deleted a company's live database during a code freeze. <a href="https://oecd.ai/en/incidents/2025-07-19-1eb1" target="_blank" rel="noopener">OECD</a></li>
+        <li>Claude Code ran one wrong delete command and erased a user's whole home folder. <a href="https://github.com/anthropics/claude-code/issues/10077" target="_blank" rel="noopener">Report</a></li>
+        <li>Public code written with AI help leaks passwords and keys more often than average. <a href="https://www.gitguardian.com/state-of-secrets-sprawl-report-2025" target="_blank" rel="noopener">GitGuardian</a></li>
+        <li>Anthropic added weekly limits, so wasted sessions now eat into your week. <a href="https://techcrunch.com/2025/07/28/anthropic-unveils-new-rate-limits-to-curb-claude-code-power-users/" target="_blank" rel="noopener">TechCrunch</a></li>
+      </ul>
+      <p class="lead">This setup blocks the worst commands outright, keeps passwords out of Claude's reach, makes it check its work before it says done, and makes your plan go further.</p>
+      <p class="lead">Most people never change Claude Code's defaults, because nobody tells them what to change. I use Claude Code every day and keep tuning it. This is that setup, packaged so you can have it in one step.</p>
+      <p class="proof">Industry-leading best practices, including Anthropic's own &middot; Built on and inspired by open-source projects with over 1 million GitHub stars combined &middot; Free, and you can undo it any time</p>
     </div>
   </section>
 
@@ -177,66 +197,23 @@
       <ol class="steps">
         <li><div><strong>Copy the prompt below.</strong> One click.</div></li>
         <li><div><strong>Paste it into Claude Code</strong> and press Enter.</div></li>
-        <li><div><strong>Read what Claude says it will change, then say yes.</strong> It does the rest and tells you when it's finished.</div></li>
+        <li><div><strong>Read what Claude says it will change, then say yes.</strong> It does the rest and tells you when it's finished. Then type <code>commands</code> to see everything you can say.</div></li>
       </ol>
       <div class="prompt">
         <div class="prompt-head"><span>Paste this into Claude Code</span><button class="copy-small copy-btn" type="button" data-copy="prompt">Copy</button></div>
         <pre id="prompt">Set up my Claude Code with https://github.com/Apurv-ed/best-claude-code-setup . First explain in plain words what it will change on my computer and wait for my OK. Then back up my current Claude settings, clone the repo and run its installer (python3 claude-setup.py), and tell me what changed.</pre>
       </div>
-    </div>
-  </section>
-
-  <section class="block" aria-labelledby="safe">
-    <div class="wrap">
-      <div class="label"><span>What happens on your computer</span></div>
-      <h2 id="safe">Nothing changes until you say yes.</h2>
-      <ul class="checks">
-        <li>Claude explains every change in plain words first and waits for your OK.</li>
-        <li>Your current settings are saved before anything is touched.</li>
-        <li>Your own instructions to Claude are left alone. The new rules live in a separate file.</li>
-        <li>Changed your mind? Ask Claude to switch any part of it off.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="block" id="commands" aria-labelledby="commands-h">
-    <div class="wrap">
-      <div class="label"><span>Cheat sheet</span></div>
-      <h2 id="commands-h">What to type, once it's installed.</h2>
-      <p class="lead">Bookmark this page. Inside Claude Code, type <strong>commands</strong> to see the same list.</p>
-      <h3 class="cmds-title">Added by this setup</h3>
-      <dl class="cmds">
-        <div><dt><code>update docs</code></dt><dd>Checks and tidies this project's notes. Nothing goes to GitHub.</dd></div>
-        <div><dt><code>update github</code></dt><dd>Tidies the notes, then saves your work to GitHub.</dd></div>
-        <div><dt><code>end session</code></dt><dd>Wraps up: tidies all the notes, saves a handoff note if work is unfinished, then saves everything to GitHub.</dd></div>
-        <div><dt><code>deploy</code></dt><dd>Runs update github, then publishes the project if it has a publish step.</dd></div>
-        <div><dt><code>handoff</code></dt><dd>Writes a note so a fresh session continues where you left off. Use it once /context shows about 40% full.</dd></div>
-        <div><dt><code>ooc</code></dt><dd>Means "running out of context". Saves a handoff note right away.</dd></div>
-        <div><dt><code>read handoff</code></dt><dd>Continues from the last handoff note. Type it at the start of a new session.</dd></div>
-        <div><dt><code>grill me</code></dt><dd>Questions your plan until every decision is clear.</dd></div>
-        <div><dt><code>reaudit</code></dt><dd>Several separate checkers, each taking one part of the work (for a website: the text, the videos, the live site in each browser), try to break it, and between them check that it does what you asked, works for real, is safe, and is the best way. Only proven problems count, and Claude fixes them. Add "project" to check the whole project. Uses more of your plan than a normal check.</dd></div>
-        <div><dt><code>grade this</code></dt><dd>Checks the work against a checklist and improves it until it passes.</dd></div>
-        <div><dt><code>fix all tests</code></dt><dd>Fixes failing tests and re-runs them until they all pass.</dd></div>
-        <div><dt><code>commands</code></dt><dd>Shows this list inside Claude Code. <span style="white-space:nowrap">/ap-optimal-claude:commands</span> also works.</dd></div>
-      </dl>
-      <h3 class="cmds-title">Built into Claude Code</h3>
-      <dl class="cmds">
-        <div><dt><code>/clear</code></dt><dd>Starts a new conversation with a clean slate. Use it between tasks to keep Claude sharp and save usage.</dd></div>
-        <div><dt><code>/resume</code></dt><dd>Reopens an earlier conversation.</dd></div>
-        <div><dt><code>/model</code></dt><dd>Switches to a different Claude model.</dd></div>
-        <div><dt><code>/usage</code></dt><dd>Shows how much of your plan you have used, and the cost.</dd></div>
-        <div><dt><code>/context</code></dt><dd>Shows how full this conversation is.</dd></div>
-        <div><dt><code>/rewind</code></dt><dd>Goes back to an earlier point in the conversation, with the option to undo code changes too.</dd></div>
-        <div><dt><code>/mcp</code></dt><dd>Manages add-on connections and their sign-ins. Sign in to Context7 (up-to-date library docs) once.</dd></div>
-        <div><dt><code>/doctor</code></dt><dd>Runs a checkup on your setup.</dd></div>
-      </dl>
-      <h3 class="cmds-title">Keys and symbols</h3>
-      <dl class="cmds">
-        <div><dt><code>Esc</code></dt><dd>Stops Claude mid-answer so you can redirect it. Work done so far is kept.</dd></div>
-        <div><dt><code>Shift+Tab</code></dt><dd>Cycles through permission modes, including plan mode, where Claude plans before changing anything. On Windows, use Alt+M if Shift+Tab does nothing.</dd></div>
-        <div><dt><code>!</code></dt><dd>Runs a terminal command when typed at the start of a line. Claude sees the output.</dd></div>
-        <div><dt><code>@</code></dt><dd>Points Claude at a file. Type it, then pick the file from the list.</dd></div>
-      </dl>
+      <div class="safe">
+        <div class="label"><span>What happens on your computer</span></div>
+        <h3 id="safe" class="cmds-title">Nothing changes until you say yes.</h3>
+        <ul class="checks">
+          <li>Claude explains every change in plain words first and waits for your OK.</li>
+          <li>Your current settings are saved before anything is touched.</li>
+          <li>Your own instructions to Claude are left alone. The new rules live in a separate file.</li>
+          <li>Changed your mind? Ask Claude to switch any part of it off.</li>
+        </ul>
+      </div>
+      <p class="also">Already installed? <a href="commands.html">See what to type.</a></p>
     </div>
   </section>
 
@@ -244,6 +221,7 @@
     <div class="wrap">
       <div class="label"><span>Questions</span></div>
       <h2 id="faq">Before you paste.</h2>
+      <details><summary>What is Claude Code?</summary><p>Anthropic's assistant that writes and changes files on your computer when you ask in plain English.</p></details>
       <details><summary>Do I need to be technical?</summary><p>No. You copy one prompt and answer yes when Claude asks. Claude handles every technical step and tells you what it did.</p></details>
       <details><summary>What do I need first?</summary><p>Claude Code installed on your computer, with a Claude plan that includes it. That's all.</p></details>
       <details><summary>Does it work on Windows?</summary><p>Yes, on Mac and Windows. On Windows a few of the automatic helpers need Git for Windows and Python. If they're missing, Claude will tell you and help you install them.</p></details>
@@ -283,6 +261,18 @@
     <span>Made by <a href="https://apurv.org">Apurv</a></span>
     <span><a href="https://github.com/Apurv-ed/best-claude-code-setup">Source on GitHub</a></span>
     <span><a href="wizard.html">Step-by-step guide</a></span>
+  </div>
+  <div class="wrap credits">
+    <p><strong>Credits.</strong> This setup stands on open-source work by others, all MIT licensed:
+    <a href="https://github.com/obra/superpowers">Superpowers</a> (Jesse Vincent),
+    <a href="https://github.com/mattpocock/skills">Skills</a> (Matt Pocock; the "grill me" command),
+    <a href="https://github.com/affaan-m/ECC">Everything Claude Code</a> (Affaan Mustafa),
+    <a href="https://github.com/DietrichGebert/ponytail">Ponytail</a> (DietrichGebert; the "simplest thing first" rule),
+    <a href="https://github.com/upstash/context7">Context7</a> (Upstash),
+    <a href="https://github.com/coreyhaines31/marketingskills">Marketing Skills</a> (Corey Haines),
+    <a href="https://github.com/sirmalloc/ccstatusline">ccstatusline</a>,
+    and Anthropic's <a href="https://github.com/anthropics/claude-plugins-official">official plugin directory</a> and
+    <a href="https://code.claude.com/docs/en/best-practices">Claude Code best practices</a>.</p>
   </div>
 </footer>
 

@@ -150,9 +150,9 @@
 </div>
 
 <div class="tip">
-  <span class="label">Use handoff before context gets high <span class="impact high">High Impact</span></span>
-  <p>Watch the context percentage in your status bar. When it reaches around 40%, type <code>handoff</code>. Claude saves everything to a file. Then type <code>/exit</code> and start fresh with <code>ccx</code>. Your next session picks up exactly where you left off.</p>
-  <p><strong>Why not wait?</strong> When context gets too full, Claude automatically compresses the conversation, which can lose important details about your work. A clean handoff preserves everything perfectly.</p>
+  <span class="label">Start fresh before context gets high <span class="impact high">High Impact</span></span>
+  <p>Watch the context percentage in your status bar. When it passes about 40%, type <code>end session</code>, then <code>/clear</code>. Claude also suggests this once. Your notes are saved, so the fresh conversation picks up where you left off.</p>
+  <p><strong>Why not wait?</strong> This setup turns off automatic compressing, so a very long conversation gets slower, costlier and more error-prone. Starting fresh keeps Claude sharp.</p>
 </div>
 
 <div class="tip">
@@ -162,7 +162,7 @@
 
 <div class="tip">
   <span class="label">Use /btw for side questions <span class="impact medium">Medium Impact</span></span>
-  <p>The <code>/btw</code> command asks a question in a popup that <strong>never enters your conversation history</strong>. Perfect for quick questions like "what does this error mean?" without bloating your context. Can reduce usage by up to 50% in question-heavy sessions.</p>
+  <p>The <code>/btw</code> command asks a question in a popup that <strong>never enters your conversation history</strong>. Perfect for quick questions like "what does this error mean?" without bloating your context. It uses noticeably less of your plan in question-heavy sessions.</p>
 </div>
 
 <div class="tip">
@@ -212,7 +212,7 @@
   </tr>
 </table>
 
-<p>Type <code>/model sonnet</code> or <code>/model opus</code> to switch mid-session. Pro and Max plans now start on Opus. For everyday work, <code>/model sonnet</code> is usually enough. Switch to Opus only when you genuinely need deep reasoning.</p>
+<p>Type <code>/model sonnet</code> or <code>/model opus</code> to switch mid-session. This setup uses <code>opusplan</code>: Opus while Claude plans, Sonnet while it does the work. That gives you careful plans without paying Opus prices for every step.</p>
 
 <p>If a task is straightforward and you want even faster responses, type <code>/effort low</code>. For hard problems, type <code>ultrathink</code> in your message for one-off deep reasoning.</p>
 
@@ -222,8 +222,8 @@
 <div class="quick-ref">
   <h3>Essential</h3>
   <ul>
-    <li><code>ccx</code> - Start Claude Code with the safe, optimized wrapper</li>
-    <li><code>handoff</code> - Save your progress so the next session picks up where you left off</li>
+    <li><code>ccx</code> - Start Claude Code with your new settings (typing <code>claude</code> works too)</li>
+    <li><code>handoff</code> - Save your progress mid-task so the next session picks up where you left off</li>
     <li><code>end session</code> - Done for the day: tidies the notes, saves a handoff if needed, and saves everything to GitHub</li>
     <li><code>reaudit</code> - Before trusting important work: separate checkers, each taking one part of the work, try to break it, and Claude fixes what they prove is wrong</li>
     <li><code>/btw</code> - Ask a side question without adding to conversation history</li>
@@ -253,7 +253,7 @@
 
 <div class="tip">
   <span class="label">Don't wait for context to fill up</span>
-  <p>Type <code>handoff</code> at 40%. Don't wait for Claude to auto-compress your conversation - compression loses details.</p>
+  <p>At about 40%, type <code>end session</code>, then <code>/clear</code>. Don't let one conversation run on and on.</p>
 </div>
 
 <div class="tip">

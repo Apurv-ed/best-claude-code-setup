@@ -71,6 +71,7 @@ def get_settings():
                 "Bash(sudo rm:*)",
                 "Bash(git push --force:*)",
                 "Bash(git push -f:*)",
+                "Bash(git reset --hard:*)",
                 "Read(./.env)",
                 "Read(./.env.*)",
                 "Read(**/.env)",

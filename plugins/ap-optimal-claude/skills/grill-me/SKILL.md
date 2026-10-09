@@ -11,3 +11,5 @@ If a question can be answered by exploring the codebase, explore
 the codebase instead.
 
 For each question, provide your recommended answer.
+
+<!-- Adapted from the grill-me skill in github.com/mattpocock/skills, Copyright (c) Matt Pocock, MIT License. -->

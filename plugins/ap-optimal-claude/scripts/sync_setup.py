@@ -17,11 +17,14 @@ Steps:
    and ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected).
 5. Status line: copy scripts/context_meter.py to ~/.claude/scripts/ap-context-meter.py and,
    only when the status line is still the setup's default, wrap it so the context-size hook
-   can read the window numbers. A personal status line is never touched.
+   can read the window numbers. ccstatusline (exact version BAR_VERSION) is installed into
+   ~/.claude/ccstatusline in the background and, once there, run with node directly: "npx -y"
+   re-resolved the package on every refresh (~1 s of CPU each, ~0.2 s direct). Until then, or
+   if the install fails (retried once a day), npx stays. A personal status line is never touched.
 
 Usage: python3 sync_setup.py   (needs CLAUDE_PLUGIN_ROOT, or pass --plugin-root DIR)
 """
-import hashlib, json, os, re, shutil, sys, time
+import hashlib, json, os, re, shutil, subprocess, sys, time
 from pathlib import Path
 
 MANAGED_SCALARS = {"skillListingBudgetFraction": 0.02}
@@ -30,6 +33,10 @@ RULES_HEADER = ("<!-- Managed by the ap-optimal-claude plugin: refreshed every s
                 "     Put personal rules in another file in this folder. -->\n# Claude Code Instructions (team rules)\n\n")
 MIGRATION_MARKER = "migrations.json"
 DEFAULT_STATUSLINE = "npx -y ccstatusline@2"  # what claude-setup.py installs
+BAR_VERSION = "2.2.32"  # exact pin: a plugin release that changes it reinstalls the bar
+BAR_DIR = "ccstatusline"  # under the claude dir, so no global npm write or sudo is needed
+BAR_SCRIPT = ("node_modules", "ccstatusline", "dist", "ccstatusline.js")
+BAR_RETRY_SECONDS = 86400
 METER_NAME = "ap-context-meter.py"
 
 
@@ -153,7 +160,73 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
         tmp.replace(path)
 
 
-def sync_statusline(root: Path, claude_dir: Path, notes: list) -> None:
+def install_bar(prefix: Path) -> None:
+    """Start npm installing the pinned status bar into prefix, in the background.
+
+    Never waits: offline, npm retries for over a minute and the session start must not.
+    The next sync picks the bar up once it is there. Raises if npm cannot be started."""
+    npm = shutil.which("npm")
+    if not npm:
+        raise FileNotFoundError("npm")
+    detach = ({"creationflags": subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP}
+              if os.name == "nt" else {"start_new_session": True})
+    subprocess.Popen([npm, "install", "--prefix", str(prefix), f"ccstatusline@{BAR_VERSION}", "--ignore-scripts",
+                      "--no-audit", "--no-fund", "--silent"], stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **detach)
+
+
+def installed_bar_version(claude_dir: Path):
+    try:
+        pkg = claude_dir.joinpath(BAR_DIR, "node_modules", "ccstatusline", "package.json")
+        return json.loads(pkg.read_text(encoding="utf-8")).get("version")
+    except Exception:
+        return None
+
+
+def local_bar(claude_dir: Path, data_dir: Path):
+    """Command that runs the installed ccstatusline with node, or None (then npx stays).
+
+    Starts a background install when the pinned version is missing, at most once a day."""
+    node = shutil.which("node")
+    if not node or "'" in node + str(claude_dir):  # the wrapper passes the command in single quotes
+        return None
+    script = claude_dir.joinpath(BAR_DIR, *BAR_SCRIPT)
+    if installed_bar_version(claude_dir) != BAR_VERSION or not script.exists():
+        marker = data_dir / "ccstatusline-install-tried"
+        if not marker.exists() or time.time() - marker.stat().st_mtime >= BAR_RETRY_SECONDS:
+            data_dir.mkdir(parents=True, exist_ok=True)
+            marker.write_text("1")
+            try:
+                install_bar(claude_dir / BAR_DIR)
+            except Exception:
+                pass
+    return f'"{node}" "{script}"' if script.exists() else None
+
+
+def wrap(python: str, meter: Path, bar: str) -> str:
+    # If python cannot start, the shell falls back to the plain status bar.
+    return f'"{python}" "{meter}" statusline \'{bar}\' || {bar}'
+
+
+def setup_statusline_kind(command, meter: Path, script: Path):
+    """'npx' or 'direct' when command is one of the forms this sync writes, else None.
+
+    Exact forms only, so a personal status line that reuses the meter is never touched."""
+    if command == DEFAULT_STATUSLINE:
+        return "npx"
+    if not isinstance(command, str):
+        return None
+    py, m = r'"[^"]+"', re.escape(f'"{meter}"')
+    npx = re.escape(DEFAULT_STATUSLINE)
+    if re.fullmatch(f'{py} {m} statusline (?:"{npx}"|\'{npx}\') \\|\\| {npx}', command):
+        return "npx"
+    direct = f'{py} {re.escape(chr(34) + str(script) + chr(34))}'
+    if re.fullmatch(f"{py} {m} statusline '{direct}' \\|\\| {direct}", command):
+        return "direct"
+    return None
+
+
+def sync_statusline(root: Path, claude_dir: Path, notes: list, data_dir: Path = None) -> None:
     path = claude_dir / "settings.json"
     if not path.exists():
         return
@@ -165,14 +238,27 @@ def sync_statusline(root: Path, claude_dir: Path, notes: list) -> None:
     s = json.loads(path.read_text(encoding="utf-8"))
     line = s.get("statusLine")
     python = shutil.which("python3") or shutil.which("python")
-    if not isinstance(line, dict) or line.get("command") != DEFAULT_STATUSLINE or not python:
+    if not isinstance(line, dict) or not python:
         return
-    # If python cannot start, the shell falls back to the plain status bar.
-    line["command"] = f'"{python}" "{dest}" statusline "{DEFAULT_STATUSLINE}" || {DEFAULT_STATUSLINE}'
+    old = line.get("command")
+    script = claude_dir.joinpath(BAR_DIR, *BAR_SCRIPT)
+    kind = setup_statusline_kind(old, dest, script)
+    if not kind:
+        return
+    bar = local_bar(claude_dir, data_dir or claude_dir / "plugins" / "data" / "ap-optimal-claude")
+    if not bar and kind == "direct" and script.exists():
+        return  # node not found in this shell only: keep the bar that works in normal sessions
+    wanted = wrap(python, dest, bar or DEFAULT_STATUSLINE)
+    if old == wanted:
+        return
+    line["command"] = wanted
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(s, indent=2) + "\n", encoding="utf-8")
     tmp.replace(path)
-    notes.append("status bar now also lets Claude suggest a fresh start once a conversation passes 40% full")
+    if old == DEFAULT_STATUSLINE:
+        notes.append("status bar now also lets Claude suggest a fresh start once a conversation passes 40% full")
+    if bar and kind == "npx":
+        notes.append("status bar now runs an installed ccstatusline instead of npx (about 5x less CPU per refresh)")
 
 
 def run(root: Path, claude_dir: Path, data_dir: Path) -> list:
@@ -182,7 +268,7 @@ def run(root: Path, claude_dir: Path, data_dir: Path) -> list:
     for step in (lambda: migrate_claude_md(claude_dir, sync_rules(root, claude_dir, notes), legacy, notes),
                  lambda: remove_duplicate_skills(claude_dir, legacy, notes),
                  lambda: sync_settings(root, claude_dir, data_dir, notes),
-                 lambda: sync_statusline(root, claude_dir, notes)):
+                 lambda: sync_statusline(root, claude_dir, notes, data_dir)):
         try:
             step()
         except Exception as exc:  # fail silent per step, but say so

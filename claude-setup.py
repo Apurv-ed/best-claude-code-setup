@@ -136,7 +136,10 @@ def get_settings():
         },
         # Status bar (model, context %, branch) via the ccstatusline npm package.
         # It needs Node.js (npx); setup() drops it on machines without npx so they
-        # do not get an erroring status bar.
+        # do not get an erroring status bar. The plugin sync (run at the end of setup
+        # and every session start) installs ccstatusline in the background and then
+        # swaps this for a direct node call (ADR-0065): npx re-resolves the package on
+        # every refresh, ~1 s of CPU each.
         "statusLine": {
             "type": "command",
             "command": "npx -y ccstatusline@2",

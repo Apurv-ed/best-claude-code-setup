@@ -64,7 +64,7 @@ No. The installer merges into settings.json (a timestamped backup is made first)
 You'll keep everything you like and gain the verification hooks, guardrails, and session memory. If something feels wrong, your backups are in `~/.claude/` with timestamps and the plugin uninstalls in one command.
 
 **Windows?**
-Run `python claude-setup.py` instead. Everything works (plugin skills, agents, guardrails, settings). The six hook scripts are bash: Claude Code runs them through Git Bash automatically if Git for Windows is installed. Five of them also call `python3`, so make sure typing `python3 --version` in Git Bash works; if it doesn't, those hooks can't do their job. Without Git for Windows you still get the full plugin + guardrails; the automatic session-context loading and stop-time self-review just won't run.
+Run `python claude-setup.py` instead. Everything works (plugin skills, agents, guardrails, settings). The hook scripts are bash: Claude Code runs them through Git Bash automatically if Git for Windows is installed. They use whichever Python 3 you have (`python3`, `python` or `py`); if none is installed, Claude tells you at the start of a session and offers to install it. Without Git for Windows you still get the full plugin + guardrails; the automatic session-context loading and stop-time self-review just won't run.
 
 **Do I need to update this myself later?**
 No. The team plugin is installed with auto-update on, so new skills, agents, hooks, the team rules and new safety blocks arrive automatically: downloaded during one session, active from the next. You should not need to re-run the setup.

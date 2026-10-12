@@ -28,12 +28,13 @@
 # false positives (an incidental permission denial unrelated to any lesson).
 # That is why this hook nudges instead of blocking: false positives cost a
 # skippable one-line note, never a stalled turn.
-command -v python3 >/dev/null 2>&1 || exit 0
+. "$(dirname "$0")/lib-python.sh"
+[ -n "$PYTHON" ] || exit 0
 
 INPUT=$(cat)
 
-HOOK_INPUT="$INPUT" python3 <<'PY' || true
-import json, os, sys
+HOOK_INPUT="$INPUT" "$PYTHON" <<'PY' || true
+import json, os, sys, tempfile
 
 try:
     d = json.loads(os.environ.get("HOOK_INPUT") or "")
@@ -48,7 +49,7 @@ path = d.get("transcript_path") or ""
 if not session_id or not path:
     sys.exit(0)
 
-sentinel = "/tmp/claude-memory-nudge-" + session_id
+sentinel = os.path.join(tempfile.gettempdir(), "claude-memory-nudge-" + session_id)
 if os.path.exists(sentinel):
     sys.exit(0)
 
@@ -56,7 +57,7 @@ last_signal_idx = None
 memory_write_after_signal = False
 
 try:
-    with open(path) as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         lines = f.readlines()
 except Exception:
     sys.exit(0)
@@ -93,7 +94,7 @@ for idx, line in enumerate(lines):
         if b.get("name") not in ("Write", "Edit"):
             continue
         file_path = (b.get("input") or {}).get("file_path") or ""
-        if "/memory/" in file_path and last_signal_idx is not None and idx > last_signal_idx:
+        if "/memory/" in file_path.replace("\\", "/") and last_signal_idx is not None and idx > last_signal_idx:
             memory_write_after_signal = True
 
 if last_signal_idx is None or memory_write_after_signal:

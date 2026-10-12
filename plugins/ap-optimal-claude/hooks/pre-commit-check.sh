@@ -6,8 +6,9 @@
 # hook anyway when it cannot parse a command (loops, $(), heredocs), so the script
 # checks the command itself and stays silent unless it really commits.
 git rev-parse --git-dir > /dev/null 2>&1 || exit 0
-command -v python3 >/dev/null 2>&1 || exit 0
-exec python3 -c '
+. "$(dirname "$0")/lib-python.sh"
+[ -n "$PYTHON" ] || exit 0
+exec "$PYTHON" -c '
 import json, re, subprocess, sys
 
 try:

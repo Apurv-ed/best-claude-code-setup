@@ -26,13 +26,14 @@
 #
 # Never exec, never let a non-zero status escape: on PostToolUse a non-zero exit
 # surfaces an error to the model for no reason.
-command -v python3 >/dev/null 2>&1 || exit 0
+. "$(dirname "$0")/lib-python.sh"
+[ -n "$PYTHON" ] || exit 0
 
 INPUT=$(cat)
 
 # Quoted heredoc: nothing inside is expanded by the shell, so apostrophes and
 # quotes in the body are safe. The payload travels via the environment.
-HOOK_INPUT="$INPUT" python3 <<'PY' || true
+HOOK_INPUT="$INPUT" "$PYTHON" <<'PY' || true
 import json, os, sys
 
 try:

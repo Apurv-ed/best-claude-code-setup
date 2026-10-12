@@ -2,8 +2,9 @@
 # Stop hook: require a self-review pass only when code was written or edited
 # since the last real user prompt. Pure Q&A turns stop silently (zero cost).
 # Hook input arrives as JSON on stdin; the transcript at transcript_path is JSONL.
-command -v python3 >/dev/null 2>&1 || exit 0
-exec python3 -c '
+. "$(dirname "$0")/lib-python.sh"
+[ -n "$PYTHON" ] || exit 0
+exec "$PYTHON" -c '
 import json, sys
 
 try:
@@ -18,7 +19,7 @@ path = d.get("transcript_path") or ""
 EDIT_TOOLS = ("Write", "Edit", "NotebookEdit")
 edited = False
 try:
-    with open(path) as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
             try:
                 entry = json.loads(line)

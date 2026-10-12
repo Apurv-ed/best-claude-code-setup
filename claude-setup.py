@@ -247,12 +247,14 @@ def get_notification_hook():
     elif IS_WINDOWS:
         return {
             "type": "command",
+            # No "$" anywhere: Windows runs hooks through Git Bash, which would expand
+            # "$null" to nothing and leave PowerShell a script it cannot parse.
             "command": (
                 'powershell.exe -c "'
                 "[System.Media.SystemSounds]::Exclamation.Play(); "
-                "$null = New-BurntToastNotification "
+                "New-BurntToastNotification "
                 "-Text 'Claude Code','Needs your attention' "
-                "-ErrorAction SilentlyContinue"
+                "-ErrorAction SilentlyContinue | Out-Null"
                 '"'
             )
         }
@@ -320,7 +322,7 @@ def write_file(path, content, executable=False):
     """Write content to a file, creating parent directories."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     newline = "\r\n" if path.endswith(".bat") else "\n"
-    with open(path, "w", newline=newline) as f:
+    with open(path, "w", newline=newline, encoding="utf-8") as f:
         f.write(content)
     if executable and not IS_WINDOWS:
         os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
@@ -332,12 +334,12 @@ def merge_claude_json():
     claude_json_path = os.path.join(HOME, ".claude.json")
     backup_file(claude_json_path)
     try:
-        with open(claude_json_path, "r") as f:
+        with open(claude_json_path, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         data = {}
     data["preferredNotifChannel"] = "terminal_bell"
-    with open(claude_json_path, "w") as f:
+    with open(claude_json_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
     print(f"  [OK] {claude_json_path} (terminal bell enabled)")
 
@@ -348,7 +350,7 @@ def remove_legacy_cc():
                    os.path.join(HOME, "bin", "cc.bat")]:
         if os.path.exists(legacy):
             try:
-                with open(legacy) as f:
+                with open(legacy, encoding="utf-8-sig") as f:
                     if "claude" in f.read():
                         os.remove(legacy)
                         print(f"  [REMOVED] legacy wrapper {legacy}")
@@ -357,7 +359,7 @@ def remove_legacy_cc():
     legacy_usr = "/usr/local/bin/cc"
     if not IS_WINDOWS and os.path.exists(legacy_usr):
         try:
-            with open(legacy_usr) as f:
+            with open(legacy_usr, encoding="utf-8-sig") as f:
                 if "claude" in f.read():
                     print(f"  [!] Old wrapper at {legacy_usr} shadows the C compiler.")
                     print(f"      Remove it with: sudo rm {legacy_usr}")
@@ -488,12 +490,12 @@ def setup():
     managed = get_settings()
     settings_path = os.path.join(CLAUDE_DIR, "settings.json")
     try:
-        with open(settings_path) as f:
+        with open(settings_path, encoding="utf-8-sig") as f:
             existing = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         existing = {}
     settings = merge_settings(existing, managed)
-    with open(settings_path, "w") as f:
+    with open(settings_path, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=2)
     print(f"  [OK] {settings_path}")
 
@@ -556,7 +558,7 @@ def setup():
         if os.path.abspath(__file__) != os.path.abspath(self_dst):
             shutil.copy2(__file__, self_dst)
         # Version file read by the session-start hook to detect outdated installs
-        with open(os.path.join(CLAUDE_DIR, ".installer_version"), "w") as vf:
+        with open(os.path.join(CLAUDE_DIR, ".installer_version"), "w", encoding="utf-8") as vf:
             vf.write("1\n")
         print("  [OK] Saved installer to ~/.claude/claude-setup.py")
     except Exception as e:

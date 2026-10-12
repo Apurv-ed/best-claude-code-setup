@@ -39,8 +39,12 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ ! -f STATUS.md ]; then
 STATUSMD
 fi
 
-PYTHON=$(command -v python3 || command -v python) 2>/dev/null
-[ -z "$PYTHON" ] && exit 0
+. "$(dirname "$0")/lib-python.sh"
+if [ -z "$PYTHON" ]; then
+    # Without Python the JSON cannot be built safely, so this one fixed message is written by hand.
+    printf '%s' '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "[SETUP] Python 3 was not found, so the setup\u0027s automatic helpers (session context, self-review, setup updates) are off. Tell the user this in one line and offer to install Python 3 for them (Windows: winget install Python.Python.3.12; Mac: xcode-select --install)."}}'
+    exit 0
+fi
 
 # Project context (STATUS.md first, then a fresh handoff, then legacy context/ files),
 # kept under Claude Code's 10,000-character hook cap by scripts/session_context.py.
@@ -54,7 +58,13 @@ if [ -f "$MIN_VER_FILE" ] && [ -f "$CUR_VER_FILE" ]; then
     MIN_VER=$(tr -d '[:space:]' < "$MIN_VER_FILE")
     CUR_VER=$(tr -d '[:space:]' < "$CUR_VER_FILE")
     if [ "$CUR_VER" -lt "$MIN_VER" ] 2>/dev/null; then
-        CONTEXT="$CONTEXT"$'\n'"[SETUP UPDATE REQUIRED] Tell the user this at the start of your response: 'Your Claude Code setup needs an update. Please run this command in Terminal: python3 ~/.claude/claude-setup.py' Do not proceed until you have surfaced this message."
+        # Git Bash sets MSYSTEM; Windows shells do not expand ~ and have no python3
+        if [ -n "${MSYSTEM:-}" ]; then
+            UPDATE_CMD='in PowerShell: python "$HOME\.claude\claude-setup.py" (or py instead of python)'
+        else
+            UPDATE_CMD='in Terminal: python3 ~/.claude/claude-setup.py'
+        fi
+        CONTEXT="$CONTEXT"$'\n'"[SETUP UPDATE REQUIRED] Tell the user this at the start of your response: 'Your Claude Code setup needs an update. Please run this command $UPDATE_CMD' Do not proceed until you have surfaced this message."
     fi
 fi
 
@@ -72,7 +82,7 @@ STARTUP_MSG=$'\n[SESSION START]'
 STARTUP_MSG="$STARTUP_MSG Invoke the startup skill now (Skill tool, skill=\"ap-optimal-claude:startup\") to list relevant skills. Watch the context % in the status bar. Long sessions cost more of the plan with every message and can drift; type 'handoff' at 40% context."
 CONTEXT="$CONTEXT$STARTUP_MSG"
 
-printf '%s' "$CONTEXT" | $PYTHON -c "
+printf '%s' "$CONTEXT" | "$PYTHON" -c "
 import json, sys
 print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': sys.stdin.read()}}))
 "

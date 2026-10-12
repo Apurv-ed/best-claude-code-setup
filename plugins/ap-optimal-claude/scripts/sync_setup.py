@@ -14,7 +14,9 @@ Steps:
 3. Duplicate skills: back up and remove ~/.claude/skills/<name> only when it is a byte-exact
    copy of a skill some installer version wrote (the plugin ships the current version).
 4. Settings: add any missing baseline deny rule (add-only), keep the scalar MANAGED keys,
-   and ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected).
+   ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected), and
+   replace the old installer's Windows notification command (byte-exact match only), which
+   Git Bash broke by expanding its "$null".
 5. Status line: copy scripts/context_meter.py to ~/.claude/scripts/ap-context-meter.py and,
    only when the status line is still the setup's default, wrap it so the context-size hook
    can read the window numbers. ccstatusline (exact version BAR_VERSION) is installed into
@@ -38,6 +40,12 @@ BAR_DIR = "ccstatusline"  # under the claude dir, so no global npm write or sudo
 BAR_SCRIPT = ("node_modules", "ccstatusline", "dist", "ccstatusline.js")
 BAR_RETRY_SECONDS = 86400
 METER_NAME = "ap-context-meter.py"
+# Windows notification hook: the old installer's command, and the fix (must equal
+# claude-setup.py get_notification_hook() on Windows; tested in test_windows_compat.py).
+WIN_NOTIFY_OLD = ('powershell.exe -c "[System.Media.SystemSounds]::Exclamation.Play(); $null = New-BurntToastNotification '
+                  "-Text 'Claude Code','Needs your attention' -ErrorAction SilentlyContinue\"")
+WIN_NOTIFY_NEW = ('powershell.exe -c "[System.Media.SystemSounds]::Exclamation.Play(); New-BurntToastNotification '
+                  "-Text 'Claude Code','Needs your attention' -ErrorAction SilentlyContinue | Out-Null\"")
 
 
 def platform_name():
@@ -144,6 +152,12 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
         deny.extend(missing)
         changed = True
         notes.append(f"added {len(missing)} safety block rule(s) to settings.json")
+    for group in (s.get("hooks") or {}).get("Notification") or []:
+        for hook in (group.get("hooks") or []) if isinstance(group, dict) else []:
+            if isinstance(hook, dict) and hook.get("command") == WIN_NOTIFY_OLD:
+                hook["command"] = WIN_NOTIFY_NEW
+                changed = True
+                notes.append("repaired the Windows 'Claude needs you' notification sound")
     marker = data_dir / MIGRATION_MARKER
     done = json.loads(marker.read_text()) if marker.exists() else {}
     if not done.get("bypass_to_auto"):
@@ -237,7 +251,9 @@ def sync_statusline(root: Path, claude_dir: Path, notes: list, data_dir: Path = 
         dest.write_bytes(src.read_bytes())
     s = json.loads(path.read_text(encoding="utf-8"))
     line = s.get("statusLine")
-    python = shutil.which("python3") or shutil.which("python")
+    # On Windows "python3" can be the Microsoft Store placeholder; this script runs under a
+    # Python the hook has checked, so use that one there.
+    python = sys.executable if platform_name() == "windows" else shutil.which("python3") or shutil.which("python")
     if not isinstance(line, dict) or not python:
         return
     old = line.get("command")

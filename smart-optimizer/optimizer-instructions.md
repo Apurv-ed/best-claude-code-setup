@@ -27,14 +27,10 @@ These are new settings/features the user doesn't have. Add them unless the user 
 **settings.json env block** (add if missing, merge if exists):
 ```json
 "env": {
-  "MAX_THINKING_TOKENS": "10000",
-  "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
-  "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75"
+  "MAX_THINKING_TOKENS": "10000"
 }
 ```
 - MAX_THINKING_TOKENS: Caps thinking tokens at 10K on older models with a fixed thinking budget. Thinking tokens are billed as output tokens. Current models (Opus 5.5, Sonnet 5.5) ignore this cap and use the effort level instead.
-- CLAUDE_CODE_SUBAGENT_MODEL: Default model for subagents that don't pick their own. A model Claude passes when spawning, or a `model` field in the agent's file, wins over it. Add `"CLAUDE_CODE_SUBAGENT_MODEL_FORCE": "1"` only if the user wants Haiku forced on every subagent.
-- CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: Triggers compaction earlier (at 75% of the compaction window). It can only lower the trigger point and only applies in sessions that compact before the model's context limit. `/autocompact` changes the window; `CLAUDE_CODE_DISABLE_AUTO_COMPACT=1` (or the `autoCompactEnabled: false` setting) turns auto-compaction off.
 
 **Default model** (add if missing):
 ```json
@@ -81,6 +77,7 @@ Common conflicts:
 - `effortLevel: "high"` (or `xhigh`/`max`) vs recommended `"medium"` - Explain: lower effort means less thinking and fewer output tokens; Opus 5.5 and Sonnet 5.5 already default to medium. User can type "ultrathink" for one-off deep reasoning.
 - Long CLAUDE.md (over 100 lines) - Explain: every line is loaded on every turn. Suggest moving specialized sections to Skills.
 - Missing handoff workflow - Suggest adding session handoff section if they don't have context preservation strategy.
+- `CLAUDE_CODE_SUBAGENT_MODEL: "haiku"` or `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in their env vs recommended: not set - Explain: the first makes helper agents such as reviewers and checkers use the cheapest model, which weakens the checks; the second summarises conversations early, which loses details. Suggest removing them.
 
 ### Category C: CLAUDE.md Optimization (review only)
 If their CLAUDE.md is over 100 lines, offer to review it for:

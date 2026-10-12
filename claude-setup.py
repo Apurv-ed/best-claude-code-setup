@@ -180,22 +180,35 @@ def _strip_migrated_hooks(hooks):
     return cleaned
 
 
+# env values older installers wrote and later dropped (ADR-0018 and the autocompact ADRs).
+# Removed only when the value is still exactly the installer's, so a person's own choice stays.
+# ("1" is left out: only one old version wrote it, and it is the documented value people set themselves.)
+LEGACY_ENV = {"CLAUDE_CODE_SUBAGENT_MODEL": {"haiku"}, "DISABLE_AUTO_COMPACT": {"true"},
+              "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": {"75", "85"}}
+
+
 def merge_settings(existing, managed):
     """Merge the managed baseline into an existing settings.json non-destructively.
 
     Preserves user customizations - theme, tui, extra hooks (RTK, pytest,
     spec-guard), other enabled plugins, and any unknown top-level keys. The
-    installer owns a small set of baseline keys (env, autoCompactWindow,
-    statusLine, enableAllProjectMcpServers, marketplace) and wins for those;
-    deny rules and enabled plugins are UNIONED so nothing the user added is lost.
+    installer owns a small set of baseline keys (autoCompactWindow, statusLine,
+    enableAllProjectMcpServers, marketplace) and wins for those; env is merged
+    key by key (the installer's own variables win, a person's other variables,
+    such as CLAUDE_CODE_GIT_BASH_PATH, stay); deny rules and enabled plugins are
+    UNIONED so nothing the user added is lost.
     A fresh install (existing == {}) just yields the managed baseline.
     """
     result = dict(existing)  # carry over every unknown top-level key untouched
 
     # Baseline keys the installer owns outright
-    for key in ("enableAllProjectMcpServers", "env", "autoCompactWindow", "statusLine"):
+    for key in ("enableAllProjectMcpServers", "autoCompactWindow", "statusLine"):
         if key in managed:
             result[key] = managed[key]
+    if "env" in managed:
+        own = result.get("env") if isinstance(result.get("env"), dict) else {}
+        own = {k: v for k, v in own.items() if str(v) not in LEGACY_ENV.get(k, ())}
+        result["env"] = {**own, **managed["env"]}
 
     # model: a default for new installs only - never overwrite a model the user picked
     if "model" in managed and "model" not in result:
@@ -370,16 +383,17 @@ def remove_legacy_cc():
 def install_ccx_wrapper():
     """Install the ccx wrapper command (user-local, no sudo, no name collision)."""
     if IS_WINDOWS:
-        ccx_dir = os.path.join(HOME, "bin")
+        # Next to claude.exe: Claude Code's Windows installer uses %USERPROFILE%\.local\bin,
+        # so wherever `claude` works, `ccx` does too.
+        ccx_dir = os.path.join(HOME, ".local", "bin")
         ccx_path = os.path.join(ccx_dir, "ccx.bat")
         os.makedirs(ccx_dir, exist_ok=True)
         write_file(ccx_path, CCX_SCRIPT_WINDOWS)
-        path_dirs = os.environ.get("PATH", "").split(os.pathsep)
-        if ccx_dir not in path_dirs:
-            print(f"\n  NOTE: Add {ccx_dir} to your system PATH:")
-            print(f"  1. Search 'Environment Variables' in Windows Settings")
-            print(f"  2. Edit PATH, add: {ccx_dir}")
-            print(f"  3. Restart your terminal")
+        norm = lambda p: os.path.normcase(os.path.normpath(p.strip().strip('"'))) if p.strip().strip('"') else ""  # spaces, quotes, case, trailing \
+        path_dirs = {norm(p) for p in os.environ.get("PATH", "").split(os.pathsep)}
+        if norm(ccx_dir) not in path_dirs:
+            print(f"\n  NOTE: {ccx_dir} is not on your PATH, so type `claude` instead of `ccx`")
+            print(f"  (or ask Claude to add {ccx_dir} to your user PATH).")
     else:
         ccx_path = os.path.join(HOME, ".local", "bin", "ccx")
         os.makedirs(os.path.dirname(ccx_path), exist_ok=True)
@@ -461,10 +475,46 @@ def install_team_plugin():
             print("      Run inside Claude Code: /plugin install ap-optimal-claude@apurv-ed")
 
 
+GIT_BASH_MISSING = """
+  !! Git for Windows is NOT installed. The setup needs it on Windows. !!
+  Without it, Claude Code runs commands in PowerShell, where the setup's
+  safety blocks do not apply, and the automatic helpers cannot run.
+  Install it (PowerShell or cmd):  winget install --id Git.Git -e
+  Then close and reopen Claude Code. Re-running this setup is not needed.
+"""
+
+
+def find_git_bash():
+    """Path of Git for Windows' bash.exe, or None: CLAUDE_CODE_GIT_BASH_PATH (environment or
+    ~/.claude/settings.json env), next to git.exe on PATH, the default install folders, bash on PATH."""
+    candidates = [os.environ.get("CLAUDE_CODE_GIT_BASH_PATH", "")]
+    try:
+        with open(os.path.join(CLAUDE_DIR, "settings.json"), encoding="utf-8-sig") as f:
+            candidates.append(str((json.load(f).get("env") or {}).get("CLAUDE_CODE_GIT_BASH_PATH", "")))
+    except (OSError, ValueError, AttributeError):
+        pass
+    git = shutil.which("git")
+    if git:  # a default install puts only Git\cmd\git.exe on PATH; bash.exe is in Git\bin
+        candidates.append(os.path.join(os.path.dirname(os.path.dirname(git)), "bin", "bash.exe"))
+    local = os.environ.get("LOCALAPPDATA", "")
+    for base in (os.environ.get("ProgramFiles", ""), os.environ.get("ProgramW6432", ""),
+                 os.path.join(local, "Programs") if local else ""):
+        if base:
+            candidates.append(os.path.join(base, "Git", "bin", "bash.exe"))
+    found = shutil.which("bash")
+    # System32\bash.exe and WindowsApps\bash.exe are WSL launchers, not Git Bash
+    if found and not any(w in found.lower() for w in ("system32", "windowsapps")):
+        candidates.append(found)
+    return next((c for c in candidates if c and os.path.isfile(c)), None)
+
+
 def setup():
     plat_name = "Mac" if IS_MAC else "Windows" if IS_WINDOWS else "Linux"
     print(f"\nClaude Code Setup - {plat_name}")
     print("=" * 50)
+    git_bash_missing = IS_WINDOWS and not find_git_bash()
+    if git_bash_missing:
+        print(GIT_BASH_MISSING)
 
     # Create directories
     os.makedirs(CLAUDE_DIR, exist_ok=True)
@@ -612,6 +662,8 @@ def setup():
     print("  These are hard blocks in every permission mode (verified live).")
     print("  Default mode is 'auto': a safety check stops other risky actions")
     print("  (wiping unsaved work, running downloaded scripts) without asking you each time.\n")
+    if git_bash_missing:
+        print(GIT_BASH_MISSING)
 
 
 if __name__ == "__main__":

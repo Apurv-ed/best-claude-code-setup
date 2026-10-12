@@ -8,6 +8,16 @@
 <meta property="og:title" content="Claude Code on God Mode">
 <meta property="og:description" content="One copy-paste makes Claude Code safer, smarter, and more reliable. No tech background needed. Free.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://apurv.org/best-claude-code-settings/">
+<meta property="og:site_name" content="Apurv">
+<meta property="og:image" content="https://apurv.org/best-claude-code-settings/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Claude Code on God Mode. One copy-paste makes Claude Code safer, smarter, and more reliable.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Claude Code on God Mode">
+<meta name="twitter:description" content="One copy-paste makes Claude Code safer, smarter, and more reliable. No tech background needed. Free.">
+<meta name="twitter:image" content="https://apurv.org/best-claude-code-settings/images/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
@@ -135,8 +145,8 @@
   <div class="wrap">
     <a class="wordmark" href="https://apurv.org">APURV</a>
     <div class="cta-row">
-      <a class="navlink" href="#faq">Questions</a>
       <a class="navlink" href="#how">How it works</a>
+      <a class="navlink" href="#faq">Questions</a>
     </div>
   </div>
 </nav>
@@ -150,7 +160,7 @@
       <button class="btn solid copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
       <a class="textlink" href="wizard.html">Or follow the step-by-step guide</a>
     </div>
-    <p class="note">Free &middot; Takes 2 minutes &middot; Undo changes any time</p>
+    <p class="note">Free &middot; Mac and Windows &middot; Takes 2 minutes &middot; Undo changes any time</p>
   </div>
 </header>
 
@@ -166,9 +176,9 @@
         <li>Public code written with AI help leaks passwords and keys more often than average. <a href="https://www.gitguardian.com/state-of-secrets-sprawl-report-2025" target="_blank" rel="noopener">GitGuardian</a></li>
         <li>Anthropic added weekly limits, so wasted sessions now eat into your week. <a href="https://techcrunch.com/2025/07/28/anthropic-unveils-new-rate-limits-to-curb-claude-code-power-users/" target="_blank" rel="noopener">TechCrunch</a></li>
       </ul>
-      <p class="lead">This setup blocks the worst commands outright, keeps passwords out of Claude's reach, makes it check its work before it says done, and makes your plan go further.</p>
+      <p class="lead">This setup blocks the worst commands outright, blocks Claude from opening your password and key files directly, makes it check its work before it says done, and makes your plan go further.</p>
       <p class="lead">Most people never change Claude Code's defaults, because nobody tells them what to change. I use Claude Code every day and keep tuning it. This is that setup, packaged so you can have it in one step.</p>
-      <p class="proof">Industry-leading best practices, including Anthropic's own &middot; Built on and inspired by open-source projects with over 1 million GitHub stars combined &middot; Free, and you can undo it any time</p>
+      <p class="proof">Industry-leading best practices (including Anthropic's own) &middot; Risky commands blocked outright &middot; Built on open-source projects with over 1 million GitHub stars</p>
     </div>
   </section>
 
@@ -179,9 +189,9 @@
       <ul class="benefits">
         <li><span class="num">01</span><div><h3>Brakes on the dangerous stuff</h3><p>Hard blocks on the commands that do the most damage, like wiping whole folders or overwriting your project's history. A built-in safety check stops other risky moves without asking you about every small step.</p></div></li>
         <li><span class="num">02</span><div><h3>Your plan goes further</h3><p>Leaner instructions, the right model for each job, and habits that avoid wasted work. You get more done before you hit your limits.</p></div></li>
-        <li><span class="num">03</span><div><h3>It works like a careful professional</h3><p>Claude is set up to plan before it builds, reach for the simplest fix that works instead of piling on code, test what it made, and double-check before it says "done". When you're finished, or when it tells you the conversation is getting long, type <code>end session</code>: it tidies the notes and saves everything, so the next session picks up where you left off.</p></div></li>
-        <li><span class="num">04</span><div><h3>Your private things stay private</h3><p>Rules that keep passwords and keys out of your code, and personal details off anything public.</p></div></li>
-        <li><span class="num">05</span><div><h3>It keeps getting better</h3><p>I update it as Claude Code changes and as better practices appear. Updates reach you automatically. You never reinstall anything.</p></div></li>
+        <li><span class="num">03</span><div><h3>It works like a careful professional</h3><p>Claude plans before it builds, picks the simplest fix that works, tests what it made, and checks before it says "done". It keeps what it builds working on other people's computers, and keeps heavy jobs from running your laptop hot. Type <code>end session</code> when you're done: it saves everything so the next session picks up where you left off.</p></div></li>
+        <li><span class="num">04</span><div><h3>Your work stays safe and private</h3><p>Claude offers every project a private online copy (a free GitHub account is all it needs), so a lost or broken laptop doesn't take your work with it. Rules keep passwords and keys out of your code, and personal details off anything public.</p></div></li>
+        <li><span class="num">05</span><div><h3>It keeps getting better</h3><p>I update it as Claude Code changes and as better practices appear. Updates reach you automatically. If one ever needs a step from you, Claude tells you.</p></div></li>
       </ul>
       <div class="cta-row mid">
         <button class="btn solid copy-btn" type="button" data-copy="prompt">Copy the setup prompt</button>
@@ -201,7 +211,7 @@
       </ol>
       <div class="prompt">
         <div class="prompt-head"><span>Paste this into Claude Code</span><button class="copy-small copy-btn" type="button" data-copy="prompt">Copy</button></div>
-        <pre id="prompt">Set up my Claude Code with https://github.com/Apurv-ed/best-claude-code-setup . First explain in plain words what it will change on my computer and wait for my OK. Then back up my current Claude settings, clone the repo and run its installer (python3 claude-setup.py), and tell me what changed.</pre>
+        <pre id="prompt">Set up my Claude Code with https://github.com/Apurv-ed/best-claude-code-setup . First explain in plain words what it will change on my computer and wait for my OK. Then, on Windows, if Git for Windows or Python is missing, install them (winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements, winget install --id Python.Python.3.12 -e --accept-source-agreements --accept-package-agreements), tell me Windows may ask for permission, and ask me to close this window, reopen Claude Code and paste this message again. When nothing is missing, back up my current Claude settings, clone the repo and run its installer (python3 claude-setup.py, or python on Windows), and tell me what changed.</pre>
       </div>
       <div class="safe">
         <div class="label"><span>What happens on your computer</span></div>
@@ -223,9 +233,9 @@
       <h2 id="faq">Before you paste.</h2>
       <details><summary>What is Claude Code?</summary><p>Anthropic's assistant that writes and changes files on your computer when you ask in plain English.</p></details>
       <details><summary>Do I need to be technical?</summary><p>No. You copy one prompt and answer yes when Claude asks. Claude handles every technical step and tells you what it did.</p></details>
-      <details><summary>What do I need first?</summary><p>Claude Code installed on your computer, with a Claude plan that includes it. That's all.</p></details>
-      <details><summary>Does it work on Windows?</summary><p>Yes, on Mac and Windows. On Windows a few of the automatic helpers need Git for Windows and Python. If they're missing, Claude will tell you and help you install them.</p></details>
-      <details><summary>Is it free?</summary><p>Yes. Free and open source.</p></details>
+      <details><summary>What do I need first?</summary><p>Claude Code installed on your computer, with a Claude plan that includes it. On Windows, Claude also installs Git for Windows and Python if they're missing; it asks first. For online copies of your projects, a free GitHub account.</p></details>
+      <details><summary>Does it work on Windows?</summary><p>Yes, on Mac and Windows. Windows needs Git for Windows: the safety blocks and automatic helpers rely on it, and the setup warns you if it's missing. The first setup on Windows takes a few minutes longer while those install. Windows support is newer, so if anything looks wrong, tell Claude and it will help.</p></details>
+      <details><summary>Is it free?</summary><p>Yes, it's free.</p></details>
       <details><summary>How do updates work?</summary><p>Automatically. New versions download in the background while you work and are active the next time you open Claude Code. There's nothing to click.</p></details>
       <details><summary>Can I trust it?</summary><p>Every line is public on GitHub, so you or anyone you trust can read it. Every update is automatically checked for passwords and personal details before it goes out.</p></details>
       <details><summary>Can I undo it?</summary><p>Yes. Your old settings are saved before anything changes. Ask Claude to restore them, or to turn off only the part you don't want.</p></details>
@@ -263,7 +273,7 @@
     <span><a href="wizard.html">Step-by-step guide</a></span>
   </div>
   <div class="wrap credits">
-    <p><strong>Credits.</strong> This setup stands on open-source work by others, all MIT licensed:
+    <p><strong>Credits.</strong> This setup stands on open-source work by others, all MIT or Apache licensed:
     <a href="https://github.com/obra/superpowers">Superpowers</a> (Jesse Vincent),
     <a href="https://github.com/mattpocock/skills">Skills</a> (Matt Pocock; the "grill me" command),
     <a href="https://github.com/affaan-m/ECC">Everything Claude Code</a> (Affaan Mustafa),

@@ -11,7 +11,7 @@ Based on official Anthropic documentation, community benchmarks, and real-world 
 Open Claude Code and paste this:
 
 ```
-Set up my Claude Code with https://github.com/Apurv-ed/best-claude-code-setup . First explain in plain words what it will change on my computer and wait for my OK. Then back up my current Claude settings, clone the repo and run its installer (python3 claude-setup.py), and tell me what changed.
+Set up my Claude Code with https://github.com/Apurv-ed/best-claude-code-setup . First explain in plain words what it will change on my computer and wait for my OK. Then, on Windows, if Git for Windows or Python is missing, install them (winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements, winget install --id Python.Python.3.12 -e --accept-source-agreements --accept-package-agreements), tell me Windows may ask for permission, and ask me to close this window, reopen Claude Code and paste this message again. When nothing is missing, back up my current Claude settings, clone the repo and run its installer (python3 claude-setup.py, or python on Windows), and tell me what changed.
 ```
 
 Your existing settings are backed up before anything changes, your own `~/.claude/CLAUDE.md` is left alone, and updates arrive automatically afterwards.
@@ -37,8 +37,10 @@ New to Claude Code or want optimized defaults? One-command setup (backs up your 
 ```bash
 git clone https://github.com/Apurv-ed/best-claude-code-setup.git
 cd best-claude-code-setup
-python3 claude-setup.py || python claude-setup.py
+python3 claude-setup.py
 ```
+
+On Windows the last line is `python claude-setup.py`.
 
 Then use `ccx` instead of `claude` to start.
 

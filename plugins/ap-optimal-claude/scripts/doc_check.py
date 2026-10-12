@@ -17,9 +17,14 @@ WARN   STATUS.md End Goal still the placeholder
 WARN   CLAUDE.md over 200 lines (Anthropic's guidance)
 WARN   status-type sections (Now / Next / Done / In Progress / Blockers) outside STATUS.md
 WARN   legacy doc files that should be folded (see the project-docs skill)
+WARN   a machine path (one person's home folder) in a maintained .md file or a committed
+       .claude/settings.json, and Write(path) rules there (never checked); see machine_paths.py
 Paths listed in an optional .doc-check-ignore (one prefix per line) are skipped, e.g. backups.
 """
 import pathlib, re, subprocess, sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import machine_paths  # noqa: E402
 
 STATUS_MAX_BYTES = 7 * 1024
 CLAUDE_MD_MAX_LINES = 200
@@ -114,8 +119,20 @@ def unknown_docs(root, ignored):
             f"or list in .doc-check-ignore): {shown}{more}")
 
 
+def tracked_files(root):
+    """Files git tracks or would add (new files not yet staged), not ignored ones: only shared files
+    can leak a machine path. None outside git."""
+    try:
+        r = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+                           capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return set(r.stdout.decode("utf-8", "replace").split("\0")) if r.returncode == 0 else None
+
+
 def check(root, changed=None):
     errors, warns = [], []
+    shared = tracked_files(root)
     frozen = FROZEN_DIRS + ignored_prefixes(root)
     status = root / "STATUS.md"
     if not status.exists():
@@ -147,6 +164,11 @@ def check(root, changed=None):
             path = target.split("#", 1)[0]
             if path and not (p.parent / path).resolve().exists():
                 (warns if rel in HISTORY_FILES else errors).append(f"{rel}: broken link -> {target}")
+        paths = [] if machine_paths.is_record(rel) or (shared is not None and rel not in shared) \
+            else machine_paths.find(text, linux=False)
+        if paths:
+            warns.append(f"{rel}: machine path {', '.join(paths[:3])} works on one computer only; "
+                         "use a relative path, ~, or a setting each person fills in")
         if rel == "CLAUDE.md":
             n = len(text.splitlines())
             if n > CLAUDE_MD_MAX_LINES:
@@ -159,6 +181,7 @@ def check(root, changed=None):
         warns.append("docs/decisions.md: single decision log; the standard is one file per decision in docs/decisions/ "
                      "(ask the user before converting; see the project-docs skill)")
     warns.extend(madr_findings(root))
+    warns.extend(machine_paths.settings_findings(root))
     unlisted = unknown_docs(root, ignored_prefixes(root))
     if unlisted:
         warns.append(unlisted)

@@ -4,7 +4,7 @@
 Claude Code caps a hook's additionalContext at 10,000 characters; anything longer is
 replaced by a file path and a 2,000-character preview, so an oversized STATUS.md used
 to hide the project's goal and state. STATUS.md gets the budget first.
-Usage: python3 session_context.py <project_root>
+Usage: python3 session_context.py <project_root> [budget]  (budget: characters, default 8500)
 """
 import pathlib, subprocess, sys
 
@@ -68,4 +68,5 @@ def build_context(root, budget=8500):
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
-    print(build_context(sys.argv[1] if len(sys.argv) > 1 else "."))
+    budget = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 8500
+    print(build_context(sys.argv[1] if len(sys.argv) > 1 else ".", budget))

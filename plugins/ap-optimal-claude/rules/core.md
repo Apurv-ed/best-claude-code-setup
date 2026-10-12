@@ -171,7 +171,7 @@ Every commit must be thorough. Follow this format:
 
 ## Parallelism
 - Always run long tasks in the background using `run_in_background`.
-- Use subagents for 2+ independent tasks. Never do sequentially what can be done concurrently.
+- Use subagents for 2+ independent tasks. Never do sequentially what can be done concurrently, except heavy local jobs (see Machine Resources).
 - Subagents do not inherit conversation context. Every delegation must name exact files/paths, the goal or error state, and the expected output.
 
 ## Long-Running Processes
@@ -191,9 +191,21 @@ Every commit must be thorough. Follow this format:
 - Never modify or delete files inside another project's repo from the current session - a "helpful" cross-project edit can silently break that project. If work is needed there, write a paste-ready prompt for that project's own Claude instance and hand it to me. Reading other projects for context stays fine.
 
 ## Machine Resources
-- CPU: processes you spawn must stay under ~25% of this computer's processing power unless I explicitly allow more for a specific task, so the computer stays cool and usable for other work. Throttle parallelism accordingly (worker counts, parallel jobs, make -j, concurrent subprocesses).
+- CPU: nothing you start may keep this computer hot for long; a short burst is fine. Heavy local jobs (test suites, builds, conversions, big data runs) go one at a time, with worker counts kept low (make -j, parallel jobs). Subagents need no count limit for this, since they think on Anthropic's servers; the local commands they run follow the same one-heavy-job-at-a-time rule.
 - Storage: before creating anything that grows over time (datasets, caches, logs, downloaded models, build artifacts), state the expected size and growth. Flag anything likely to exceed ~1GB before writing it.
 - If a project folder or ~/.claude (transcripts, caches) looks bloated during normal work, surface it with a concrete plan: back up anything worth keeping first, then clean up locally. Never delete unbacked data without asking.
+
+## Portable Paths
+- Committed files must work on any teammate's computer, Mac or Windows. Never commit a path into one person's home folder (/Users/<name>, C:\Users\<name>).
+- Code builds paths from the project folder (Python: pathlib) and opens text as UTF-8. Anything outside the project comes from an environment variable or a gitignored local config with a documented default; if it is missing, stop and say which one.
+- A committed .claude/settings.json holds only portable rules. Machine paths go in .claude/settings.local.json, listed in .gitignore. Use Edit() or Read() rules: Write() rules are never checked.
+- Docs link with relative paths; dated records stay as written. Fix a machine path in a file you are already changing; a full sweep only when I ask.
+
+## Nothing Depends on This Computer
+- Every project has a private online copy: code, docs and small data (parsed into JSON, CSV or Markdown) in its private GitHub repo; big or binary files (videos, large PDFs, datasets) in online storage, with a list in the repo of where each one is. Passwords and keys never go in a repo. If a project has no online home yet, say so and offer to set one up; ask me which account to use.
+
+## Downloads Tidy
+- When a task used files I put in Downloads or on the Desktop, first save what is worth keeping into the project (as above). Then offer to move those files into a `Downloads/Delete/<project>-<date>/` folder I can review and empty. Ask first, never delete, and touch only the files the task used.
 
 ## Phase Checkpoints
 - Before starting each new phase of a multi-step task, run a full checkpoint: the tests (if the project has any), all work saved in git, and a 3-line status summary. Do not proceed until green.

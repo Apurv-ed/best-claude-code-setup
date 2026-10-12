@@ -138,7 +138,7 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
     path = claude_dir / "settings.json"
     if not path.exists():
         return
-    s = json.loads(path.read_text(encoding="utf-8"))
+    s = json.loads(path.read_text(encoding="utf-8-sig"))  # Windows PowerShell 5.1 writes a BOM
     changed = False
     for k, v in MANAGED_SCALARS.items():
         if s.get(k) != v:
@@ -249,7 +249,7 @@ def sync_statusline(root: Path, claude_dir: Path, notes: list, data_dir: Path = 
     if not dest.exists() or dest.read_bytes() != src.read_bytes():
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(src.read_bytes())
-    s = json.loads(path.read_text(encoding="utf-8"))
+    s = json.loads(path.read_text(encoding="utf-8-sig"))  # Windows PowerShell 5.1 writes a BOM
     line = s.get("statusLine")
     # On Windows "python3" can be the Microsoft Store placeholder; this script runs under a
     # Python the hook has checked, so use that one there.

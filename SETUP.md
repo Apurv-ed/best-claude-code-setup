@@ -20,6 +20,11 @@ Everything here was audited against official Anthropic docs and stress-tested by
 ```
 Set up my computer with our team's Claude Code configuration. Do this for me:
 
+0. On Windows only: if Git for Windows or Python is missing, install them with
+   winget (Git.Git and Python.Python.3.12, adding --accept-source-agreements
+   --accept-package-agreements), tell me Windows may ask for permission, then ask
+   me to close this window, reopen Claude Code and paste this block again.
+
 1. Download the team setup from https://github.com/Apurv-ed/best-claude-code-setup.git
    into a temporary folder and run claude-setup.py with Python (python3 on Mac,
    python on Windows). It backs up my existing settings automatically and
@@ -64,10 +69,10 @@ No. The installer merges into settings.json (a timestamped backup is made first)
 You'll keep everything you like and gain the verification hooks, guardrails, and session memory. If something feels wrong, your backups are in `~/.claude/` with timestamps and the plugin uninstalls in one command.
 
 **Windows?**
-Run `python claude-setup.py` instead. Everything works (plugin skills, agents, guardrails, settings). The hook scripts are bash: Claude Code runs them through Git Bash automatically if Git for Windows is installed. They use whichever Python 3 you have (`python3`, `python` or `py`); if none is installed, Claude tells you at the start of a session and offers to install it. Without Git for Windows you still get the full plugin + guardrails; the automatic session-context loading and stop-time self-review just won't run.
+Run `python claude-setup.py` instead. Everything works (plugin skills, agents, guardrails, settings). Install Git for Windows first (`winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements`); the setup needs it, and the installer warns if it is missing. With it, Claude runs commands in Git Bash, the safety blocks apply, and Claude Code switches its PowerShell tool off because of them. Without it, PowerShell is Claude's only shell: the safety blocks (written for Bash) do not cover it, and the hook scripts cannot run. Skills and agents still work. The hooks use whichever Python 3 you have (`python3`, `python` or `py`); if none is installed, Claude tells you at the start of a session and offers to install it.
 
 **Do I need to update this myself later?**
 No. The team plugin is installed with auto-update on, so new skills, agents, hooks, the team rules and new safety blocks arrive automatically: downloaded during one session, active from the next. You should not need to re-run the setup.
 
 **Something broke / question?**
-Post in the Slack thread. Known quirk: if `ccx` is not found after install, add `~/.local/bin` to your PATH (the installer prints the exact line).
+Post in the Slack thread. Known quirk: if `ccx` is not found after install, type `claude` instead (everything works the same), or add the folder the installer names to your PATH (`~/.local/bin` on Mac and Linux, `%USERPROFILE%\.local\bin` on Windows, where Claude Code's own installer puts `claude.exe`).

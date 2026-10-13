@@ -30,6 +30,8 @@ import hashlib, json, os, re, shutil, subprocess, sys, time
 from pathlib import Path
 
 MANAGED_SCALARS = {"skillListingBudgetFraction": 0.02}
+SUBAGENT_DEFAULT_MODEL = "sonnet"
+SUBAGENT_DEFAULT_MIN_VERSION = (2, 1, 251)  # from here the variable is only a fallback
 RULES_NAME = "ap-optimal-claude.md"
 RULES_HEADER = ("<!-- Managed by the ap-optimal-claude plugin: refreshed every session, edits here are overwritten.\n"
                 "     Put personal rules in another file in this folder. -->\n# Claude Code Instructions (team rules)\n\n")
@@ -134,6 +136,38 @@ def remove_duplicate_skills(claude_dir: Path, legacy: dict, notes: list) -> None
         notes.append(f"removed duplicate skill ~/.claude/skills/{name} (old installer copy; the plugin ships the current one)")
 
 
+def claude_version():
+    """Installed Claude Code version as a tuple, or None when it cannot be read."""
+    exe = shutil.which("claude")
+    if not exe:
+        return None
+    try:
+        out = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = re.search(r"(\d+)\.(\d+)\.(\d+)", out)
+    return tuple(int(x) for x in m.groups()) if m else None
+
+
+def default_subagent_model(s: dict, done: dict, notes: list) -> bool:
+    """Once: helpers that get no model of their own run on Sonnet, not the session model (ADR-0070).
+
+    Before 2.1.251 the variable overrode agent files too (would drop the Opus checkers), so older
+    versions are retried later. A Haiku main model or a value the person set is left alone for good."""
+    env = s.get("env") if isinstance(s.get("env"), dict) else {}
+    if "CLAUDE_CODE_SUBAGENT_MODEL" in env or "haiku" in str(s.get("model", "")):
+        done["subagent_model_default"] = "skipped " + time.strftime("%Y-%m-%d")
+        return False
+    version = claude_version()
+    if version is None or version < SUBAGENT_DEFAULT_MIN_VERSION:
+        return False  # not marked done: tried again next session, after an update
+    s["env"] = {**env, "CLAUDE_CODE_SUBAGENT_MODEL": SUBAGENT_DEFAULT_MODEL}
+    done["subagent_model_default"] = time.strftime("%Y-%m-%d")
+    notes.append("helper agents now default to Sonnet instead of your main model (saves plan usage; "
+                 "checkers that need Opus still use it). To undo, delete CLAUDE_CODE_SUBAGENT_MODEL in settings.json")
+    return True
+
+
 def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> None:
     path = claude_dir / "settings.json"
     if not path.exists():
@@ -168,6 +202,11 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
         done["bypass_to_auto"] = time.strftime("%Y-%m-%d")
         data_dir.mkdir(parents=True, exist_ok=True)
         marker.write_text(json.dumps(done))
+    if not done.get("subagent_model_default"):
+        changed |= default_subagent_model(s, done, notes)
+        if done.get("subagent_model_default"):
+            data_dir.mkdir(parents=True, exist_ok=True)
+            marker.write_text(json.dumps(done))
     if changed:
         tmp = path.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(s, indent=2) + "\n", encoding="utf-8")

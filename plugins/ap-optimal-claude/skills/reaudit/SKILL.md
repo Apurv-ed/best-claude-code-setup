@@ -31,7 +31,7 @@ Then check coverage. Each of these duties must be owned by at least one named ch
 
 Real actions: if the only real proof needs a real action (submit the live form, send a test email, a test payment), list those now and ask the user once, before launching, whether to include them and with which test data.
 
-Agent: `general-purpose` for anything that runs, browses or researches; `ap-optimal-claude:code-verifier` for checking claims and files.
+Agent: `general-purpose` for anything that runs, browses or researches; `ap-optimal-claude:code-verifier` for checking claims and files. Pass `model: "opus"` to each `general-purpose` checker: helpers default to Sonnet, and a reaudit is a final review.
 
 ## Step 3: Send the checkers, all in one message
 

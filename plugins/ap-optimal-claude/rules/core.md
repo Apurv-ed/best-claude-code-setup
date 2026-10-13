@@ -173,6 +173,8 @@ Every commit must be thorough. Follow this format:
 - Always run long tasks in the background using `run_in_background`.
 - Use subagents for 2+ independent tasks. Never do sequentially what can be done concurrently, except heavy local jobs (see Machine Resources).
 - Subagents do not inherit conversation context. Every delegation must name exact files/paths, the goal or error state, and the expected output.
+- Helper models: helpers run on Sonnet by default (the setup sets it). Pass `model: "opus"` only for design, architecture or a final review of finished work, and say why in one line. Use `haiku` (or the mechanic agent) only for exact, fully specified edits or lookups, never for work described only in prose. A fix loop still failing after 3 rounds moves up one model.
+- Helper cost: a helper sent another message re-reads its whole history, so give each new task a fresh helper with a short brief, and do small fixes, doc edits and pushes yourself. After fixes, run one combined re-check, not one per finding. Never put helpers on Fable unless asked.
 
 ## Long-Running Processes
 - Probe first: before any long job (API scan, backtest, remote script, pipeline), run a minimal version (1 record / 2-3 rows / a one-liner) and confirm the output looks right. A 5-second probe prevents a 3-minute failure.

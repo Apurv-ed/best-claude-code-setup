@@ -27,9 +27,11 @@ These are new settings/features the user doesn't have. Add them unless the user 
 **settings.json env block** (add if missing, merge if exists):
 ```json
 "env": {
-  "MAX_THINKING_TOKENS": "10000"
+  "MAX_THINKING_TOKENS": "10000",
+  "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
 }
 ```
+- CLAUDE_CODE_SUBAGENT_MODEL: helper agents that are not given a model of their own run on Sonnet instead of the main model, which saves plan usage; checkers whose own file names Opus keep Opus. Skip it if their main model is Haiku (Sonnet would cost more) or their Claude Code is older than 2.1.251 (there it overrides the checkers' own model too; `claude --version` shows it).
 - MAX_THINKING_TOKENS: Caps thinking tokens at 10K on older models with a fixed thinking budget. Thinking tokens are billed as output tokens. Current models (Opus 5.5, Sonnet 5.5) ignore this cap and use the effort level instead.
 
 **Default model** (add if missing):
@@ -77,7 +79,8 @@ Common conflicts:
 - `effortLevel: "high"` (or `xhigh`/`max`) vs recommended `"medium"` - Explain: lower effort means less thinking and fewer output tokens; Opus 5.5 and Sonnet 5.5 already default to medium. User can type "ultrathink" for one-off deep reasoning.
 - Long CLAUDE.md (over 100 lines) - Explain: every line is loaded on every turn. Suggest moving specialized sections to Skills.
 - Missing handoff workflow - Suggest adding session handoff section if they don't have context preservation strategy.
-- `CLAUDE_CODE_SUBAGENT_MODEL: "haiku"` or `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in their env vs recommended: not set - Explain: the first makes helper agents such as reviewers and checkers use the cheapest model, which weakens the checks; the second summarises conversations early, which loses details. Suggest removing them.
+- `CLAUDE_CODE_SUBAGENT_MODEL: "haiku"` vs recommended `"sonnet"` - Explain: helpers such as reviewers and research agents doing judgment work on the cheapest model weakens their results; Sonnet still costs far less than Opus.
+- `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` in their env vs recommended: not set - Explain: it summarises conversations early, which loses details. Suggest removing it.
 
 ### Category C: CLAUDE.md Optimization (review only)
 If their CLAUDE.md is over 100 lines, offer to review it for:

@@ -146,7 +146,7 @@
 
 <div class="tip">
   <span class="label">Keep sessions short <span class="impact high">High Impact</span></span>
-  <p>Token cost accelerates as conversations grow. By message 30, a single prompt costs ~167,000 tokens because the entire history is re-sent. Start fresh sessions for new tasks. A series of short sessions is dramatically cheaper than one long marathon.</p>
+  <p>Every message re-sends the whole conversation so far, so each message in a long session costs more than the one before it. Start a fresh session (type <code>/clear</code>) for each new task. A few short sessions cost far less than one long one.</p>
 </div>
 
 <div class="tip">

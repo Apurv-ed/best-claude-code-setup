@@ -12,6 +12,7 @@
 ## Clarifying Questions
 - Always ask clarifying questions for complex or ambiguous tasks. Do not assume.
 - Always put questions at the very bottom of your response. Structure: work first, then questions.
+- Every question or decision you put to me comes with your recommendation and a one-line reason. If only I know the answer (e.g. which account), still say what you would guess and why.
 - For high-risk tasks (database migrations, destructive operations, architectural changes), state your planned approach in 3-5 bullet points and wait for approval.
 
 ## Critical Honesty (Default Disposition)

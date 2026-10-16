@@ -6,8 +6,8 @@ Everything here was audited against official Anthropic docs and stress-tested by
 
 ## What changes for you
 
-- **Zero permission prompts.** No more pressing "Yes" 200 times a day. Sixteen deny rules block the dangerous commands (rm -rf, force push, reading your credentials) - everything else just runs.
-- **Claude checks its own work.** A Stop hook forces a verify-review-complete pass whenever code was written, before Claude tells you it's done. Fewer "done!" messages that aren't.
+- **Zero permission prompts.** No more pressing "Yes" 200 times a day. Nineteen deny rules block the dangerous commands (rm -rf, force push, reading your credentials) - everything else just runs.
+- **Claude checks its own work.** When code was changed and nothing was run afterwards, a short note asks Claude to really check it before saying it is done. Fewer "done!" messages that aren't.
 - **Helpers cost less.** When Claude hands work to a helper agent, the helper runs on the cheaper Sonnet model unless the job needs the strongest one (design, a final review). Your plan lasts longer; your own model choice is untouched. To turn it off, ask Claude to remove `CLAUDE_CODE_SUBAGENT_MODEL` from your settings.
 - **Claude stops repeating its helpers' guesses.** When Claude hands work to a helper agent and the helper reports back, Claude is told how much that helper actually looked at. If the helper opened nothing, Claude is told to check the claim before passing it on to you as fact. You won't see this happen - it works quietly in the background.
 - **Claude actually remembers corrections now.** Instead of a manual "lessons" file you had to remember existed, Claude saves what it learns to its own built-in memory automatically. If it forgets to save something worth remembering, a quiet nudge reminds it once per session - you won't see this either unless there's something to log.
@@ -73,7 +73,7 @@ You'll keep everything you like and gain the verification hooks, guardrails, and
 Run `python claude-setup.py` instead. Everything works (plugin skills, agents, guardrails, settings). Install Git for Windows first (`winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements`); the setup needs it, and the installer warns if it is missing. With it, Claude runs commands in Git Bash, the safety blocks apply, and Claude Code switches its PowerShell tool off because of them. Without it, PowerShell is Claude's only shell: the safety blocks (written for Bash) do not cover it, and the hook scripts cannot run. Skills and agents still work. The hooks use whichever Python 3 you have (`python3`, `python` or `py`); if none is installed, Claude tells you at the start of a session and offers to install it.
 
 **Do I need to update this myself later?**
-No. The team plugin is installed with auto-update on, so new skills, agents, hooks, the team rules and new safety blocks arrive automatically: downloaded during one session, active from the next. You should not need to re-run the setup.
+No. The setup checks for updates itself once a day, so new skills, agents, hooks, the team rules and new safety blocks arrive automatically: downloaded in the background, active from the next session. Only installs from before version 1.11.0 (October 2026) need one re-run of the setup.
 
 **Something broke / question?**
 Post in the Slack thread. Known quirk: if `ccx` is not found after install, type `claude` instead (everything works the same), or add the folder the installer names to your PATH (`~/.local/bin` on Mac and Linux, `%USERPROFILE%\.local\bin` on Windows, where Claude Code's own installer puts `claude.exe`).

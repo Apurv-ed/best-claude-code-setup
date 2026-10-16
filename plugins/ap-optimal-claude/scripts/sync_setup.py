@@ -16,7 +16,11 @@ Steps:
 4. Settings: add any missing baseline deny rule (add-only), keep the scalar MANAGED keys,
    ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected), and
    replace the old installer's Windows notification command (byte-exact match only), which
-   Git Bash broke by expanding its "$null".
+   Git Bash broke by expanding its "$null". Keep auto-update on for this setup's marketplace:
+   `claude plugin marketplace add` drops the key, and third-party marketplaces default to off
+   (an explicit "off", in settings or under /plugin, is respected). The same for the own-name
+   marketplace once the setup comes from there. Add FORCE_AUTOUPDATE_PLUGINS=1 to env when
+   missing, so plugin updates still arrive where Claude Code's own updater is off.
 5. Status line: copy scripts/context_meter.py to ~/.claude/scripts/ap-context-meter.py and,
    only when the status line is still the setup's default, wrap it so the context-size hook
    can read the window numbers. ccstatusline (exact version BAR_VERSION) is installed into
@@ -42,6 +46,18 @@ BAR_DIR = "ccstatusline"  # under the claude dir, so no global npm write or sudo
 BAR_SCRIPT = ("node_modules", "ccstatusline", "dist", "ccstatusline.js")
 BAR_RETRY_SECONDS = 86400
 METER_NAME = "ap-context-meter.py"
+# This setup's marketplace. `claude plugin marketplace add` rewrites its settings entry without
+# autoUpdate, and third-party marketplaces default to auto-update OFF, so the sync puts it back.
+MARKETPLACE = "apurv-ed"
+MARKETPLACE_REPO = "Apurv-ed/best-claude-code-setup"
+# The maintained own-name marketplace every copy moves to (scripts/self_update.py); once a
+# person is on it, its entry needs the same auto-update care.
+OWN_MARKETPLACE = "apurv-ed"
+OWN_MARKETPLACE_REPO = "Apurv-ed/best-claude-code-setup"
+PLUGIN_NAME = "ap-optimal-claude"
+# Plugins update even where Claude Code's own updater is switched off (DISABLE_AUTOUPDATER and
+# similar); added only when the person has not set it themselves.
+MANAGED_ENV = {"FORCE_AUTOUPDATE_PLUGINS": "1"}
 # Windows notification hook: the old installer's command, and the fix (must equal
 # claude-setup.py get_notification_hook() on Windows; tested in test_windows_compat.py).
 WIN_NOTIFY_OLD = ('powershell.exe -c "[System.Media.SystemSounds]::Exclamation.Play(); $null = New-BurntToastNotification '
@@ -168,6 +184,82 @@ def default_subagent_model(s: dict, done: dict, notes: list) -> bool:
     return True
 
 
+def auto_update_turned_off(claude_dir: Path, marketplace: str = MARKETPLACE) -> bool:
+    """True when /plugin says auto-update is off for this marketplace, or the file can't be read."""
+    known_file = claude_dir / "plugins" / "known_marketplaces.json"
+    if not known_file.exists():
+        return False
+    try:
+        known = json.loads(known_file.read_text(encoding="utf-8"))
+        entry = known.get(marketplace) if isinstance(known, dict) else None
+        return isinstance(entry, dict) and entry.get("autoUpdate") is False
+    except Exception:
+        return True  # unreadable: leave the person's setup as it is
+
+
+def keep_auto_update(s: dict, claude_dir: Path, notes: list) -> bool:
+    """Make sure this setup's marketplace auto-updates, unless the person turned it off.
+
+    Covers this copy's marketplace (declared when missing) and the own-name marketplace once
+    the person is on it. Never raises: an odd settings file must not cost the other settings
+    steps (deny rules)."""
+    targets = {MARKETPLACE: MARKETPLACE_REPO}
+    try:
+        markets = s.get("extraKnownMarketplaces")
+        enabled = s.get("enabledPlugins") if isinstance(s.get("enabledPlugins"), dict) else {}
+        if enabled.get(f"{PLUGIN_NAME}@{OWN_MARKETPLACE}") or (isinstance(markets, dict) and OWN_MARKETPLACE in markets):
+            targets[OWN_MARKETPLACE] = OWN_MARKETPLACE_REPO
+    except Exception:
+        return False
+    changed = False
+    for name, repo in targets.items():
+        changed |= _keep_one(s, claude_dir, name, repo)
+    if changed:
+        notes.append("turned automatic updates for this setup back on")
+    return changed
+
+
+def _keep_one(s: dict, claude_dir: Path, name: str, repo: str) -> bool:
+    try:
+        markets = s.get("extraKnownMarketplaces")
+        markets = {} if markets is None else markets
+        entry = markets.get(name) if isinstance(markets, dict) else None
+        if not isinstance(markets, dict) or (entry is not None and not isinstance(entry, dict)):
+            return False
+        if (entry and "autoUpdate" in entry) or auto_update_turned_off(claude_dir, name):
+            return False
+        entry = entry if entry is not None else {}
+        entry.setdefault("source", {"source": "github", "repo": repo})
+        entry["autoUpdate"] = True
+        markets[name] = entry
+        s["extraKnownMarketplaces"] = markets
+    except Exception:
+        return False
+    return True
+
+
+def managed_env(s: dict, notes: list) -> bool:
+    """Add each MANAGED_ENV value the person has not set (add-only: never changes or removes theirs)."""
+    env = {} if s.get("env") is None else s.get("env")
+    if not isinstance(env, dict):
+        return False  # not a valid env block: leave what the person wrote alone
+    missing = {k: v for k, v in MANAGED_ENV.items() if k not in env}
+    if not missing:
+        return False
+    s["env"] = {**env, **missing}
+    notes.append("setup fixes now arrive even where Claude Code's own updater is switched off")
+    return True
+
+
+def read_migrations(marker: Path) -> dict:
+    """The record of one-time migrations already done; unreadable or not an object counts as none."""
+    try:
+        done = json.loads(marker.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return {}
+    return done if isinstance(done, dict) else {}
+
+
 def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> None:
     path = claude_dir / "settings.json"
     if not path.exists():
@@ -193,7 +285,7 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
                 changed = True
                 notes.append("repaired the Windows 'Claude needs you' notification sound")
     marker = data_dir / MIGRATION_MARKER
-    done = json.loads(marker.read_text()) if marker.exists() else {}
+    done = read_migrations(marker)
     if not done.get("bypass_to_auto"):
         if perms.get("defaultMode") == "bypassPermissions":
             perms["defaultMode"] = "auto"
@@ -207,6 +299,8 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
         if done.get("subagent_model_default"):
             data_dir.mkdir(parents=True, exist_ok=True)
             marker.write_text(json.dumps(done))
+    changed |= keep_auto_update(s, claude_dir, notes)
+    changed |= managed_env(s, notes)
     if changed:
         tmp = path.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(s, indent=2) + "\n", encoding="utf-8")

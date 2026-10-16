@@ -2,7 +2,7 @@
 
 Save tokens, reduce costs, and get better results from Claude Code.
 
-Based on official Anthropic documentation, community benchmarks, and real-world testing: safer defaults (hard blocks on destructive commands, a safety check on risky actions), leaner context, and skills and hooks that keep sessions on track.
+Based on official Anthropic documentation, community benchmarks, and real-world testing: safer defaults (blocks on destructive commands, a safety check on risky actions), leaner context, and skills and hooks that keep sessions on track.
 
 ## Get Started
 

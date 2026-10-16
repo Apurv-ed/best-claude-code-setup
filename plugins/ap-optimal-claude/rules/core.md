@@ -1,7 +1,7 @@
 ## Context Efficiency
 - Do not echo back file contents you just read.
 - Do not narrate tool calls ("Let me read the file..."). Just do it.
-- Keep explanations proportional to complexity. No preambles or sycophantic language.
+- Write for a reader with no technical background: everyday words, short sentences, answer first. Explain any technical term you must use in a few words; exact commands and file paths are fine. Cut preamble, recaps and repeats; offer detail instead of including it. No flattery or sycophancy. This covers replies and anything I will send to people. It does not cover commit messages, code, or prompts for other Claude instances.
 - Never re-read a file already read in this session.
 - For files over 500 lines, use offset/limit to read only the relevant section.
 - Use Grep to locate sections before reading entire files.
@@ -10,7 +10,7 @@
 - Do not paste file contents into subagent prompts. Give them the path and let them read it.
 
 ## Clarifying Questions
-- Always ask clarifying questions for complex or ambiguous tasks. Do not assume.
+- Ask a clarifying question only when different readings of the request would lead to materially different work; otherwise take the most reasonable reading, state it in one line, and go.
 - Always put questions at the very bottom of your response. Structure: work first, then questions.
 - Every question or decision you put to me comes with your recommendation and a one-line reason. If only I know the answer (e.g. which account), still say what you would guess and why.
 - For high-risk tasks (database migrations, destructive operations, architectural changes), state your planned approach in 3-5 bullet points and wait for approval.
@@ -36,44 +36,12 @@ Default to appropriate skepticism, not agreement:
 - Build custom only when nothing good exists or there is a specific reason (licensing, size, security, poor fit), and say in one line what you checked and why it was not used.
 
 ## Software Engineering Principles
-
-When writing new code, embody these. When about to violate one, flag it briefly
-in your response - don't restructure unrequested code, but don't silently
-introduce violations either.
-
-**Always:**
-- **Simplest thing first** (adapted from the ponytail ladder, MIT,
-  github.com/DietrichGebert/ponytail): after understanding the problem, stop
-  at the first option that works: not needed (say so) > already in this
-  codebase > standard library > native platform feature (e.g.
-  `<input type="date">`, CSS, a database constraint) > an installed
-  dependency > a few lines of new code. Never cut validation, error
-  handling, security or tests to get there.
-- **High Cohesion**: each function/class/module does one thing. If you can
-  describe it with "and", split it.
-- **Low Coupling**: application modules interact through minimal, well-defined
-  interfaces. Never reach into another application module's internals.
-- **Encapsulation**: expose only what callers need; everything else is private
-  or internal by default.
-
-**When state is involved:**
-- **Single Source of Truth**: each piece of mutable state has one place where
-  it is written. Reads can be distributed; writes cannot. Never let two
-  components independently modify the same state.
-
-**For multi-module projects (not scripts or single-file utilities):**
-- **Layered Architecture**: if the project has distinct layers (presentation /
-  business logic / data access), respect them. Don't skip layers without
-  flagging it explicitly.
-- **Named pattern**: before writing a new class, service, or design involving
-  multiple interacting components, name the pattern in plain English -
-  event-based (Observer/pub-sub), swappable strategy (Strategy), multiple
-  creation types (Factory Method), integration shim (Adapter), simplified
-  interface (Facade). Name it before writing; if none fits, say so.
-
-**Before presenting non-trivial changes:**
-- Pause and ask yourself: "Is there a more elegant way?" If the fix feels hacky, implement the elegant solution instead.
-- Skip for simple, obvious fixes - don't over-engineer.
+When writing new code, follow these. When about to break one, flag it briefly; don't restructure code you were not asked to touch.
+- **Simplest thing first** (adapted from the ponytail ladder, MIT, github.com/DietrichGebert/ponytail): stop at the first option that works: not needed (say so) > already in this codebase > standard library > native platform feature (e.g. `<input type="date">`, CSS, a database constraint) > an installed dependency > a few lines of new code. Never cut validation, error handling, security or tests to get there.
+- **One job, small interfaces**: each function, class or module does one thing (if you need "and" to describe it, split it). Modules talk through minimal interfaces, expose only what callers need, and never reach into each other's internals.
+- **Single source of truth**: each piece of mutable state is written in exactly one place; reads can be spread out, writes cannot.
+- **Multi-module projects**: respect existing layers (presentation / logic / data access) and flag it if you skip one. Before a design with several interacting parts, name its pattern in plain English (Observer, Strategy, Factory Method, Adapter, Facade), or say none fits.
+- **Before presenting non-trivial changes**: ask "is there a more elegant way?" and use it if the fix feels hacky. Skip this for simple, obvious fixes.
 
 ## Testing
 - Every piece of code must have tests. No exceptions.
@@ -113,14 +81,8 @@ introduce violations either.
 ## Context Window Monitoring
 - One task per session keeps quality high. When a hook reports (MEASURED) that the conversation passed 40% full, or when I start an unrelated task in a long conversation, suggest once, in one line: type `end session`, then `/clear`. Never repeat it in that session, and never add other handoff warnings.
 
-### When I type "handoff" or "handoff <project>"
-Invoke the handoff skill (Skill tool, skill="ap-optimal-claude:handoff"). If a project name is given (e.g. "handoff my-app" - any folder under ~/Documents/dev/), the skill writes to `~/Documents/dev/<project>/docs/SESSION_HANDOFF.md` using git state from that directory. If no project name, writes to the current project. Pasting the last ~50 lines of a filled-up session helps capture mid-debug state, but is not required - the skill can reconstruct from git diff + log alone.
-
-### When I type "ooc" or "running out of context"
-Context is nearly full. Invoke the handoff skill (Skill tool, skill="ap-optimal-claude:handoff") for the current project, then reply with exactly: "Session saved. Open a new Claude Code session in this directory and type `read handoff` to resume."
-
-### On Every Session Start
-Invoke the startup skill immediately (Skill tool, skill="ap-optimal-claude:startup") as your very first action, before responding to anything. The hook has already loaded STATUS.md (and a fresh SESSION_HANDOFF.md) - do not re-read them.
+- "handoff" or "handoff <project>": invoke the ap-optimal-claude:handoff skill (for a named project, it writes to that project's `docs/SESSION_HANDOFF.md`).
+- "ooc" or "running out of context": invoke the ap-optimal-claude:handoff skill for this project, then reply exactly: "Session saved. Open a new Claude Code session in this directory and type `read handoff` to resume."
 
 ## Git
 - Run `git status` and `git diff --staged` before every commit.
@@ -159,6 +121,7 @@ Every commit must be thorough. Follow this format:
 - In Claude Code's shell, `grep` is Claude Code's built-in search (ugrep): it skips gitignored files and some options behave differently. When you need standard grep behaviour (scripts, gitignored files, exact flags), write `command grep`.
 
 ## Communication
+- One place for what I need. While work is still running (helpers, background jobs), send nothing, or at most one short line when something important changes; never put a question or decision in it. The last message, when everything is done, stands alone: what was done, then everything I need to act on, including every earlier question I have not answered, repeated in full. I should never have to scroll up.
 - Do NOT repeatedly suggest pushing, committing, or deploying. State what is ready once.
 - Never use em dashes anywhere. Use ` - ` or rewrite the sentence.
 - Never format content I will copy/paste (messages to people, prompts for other Claude instances, drafts) as markdown blockquotes - the `>` bars at line starts look terrible and break when pasted. Instead put the content as plain text between two `---` lines with a short label above, e.g. "Message below:". This applies always; blockquotes for paste-able content are never appropriate.
@@ -172,7 +135,7 @@ Every commit must be thorough. Follow this format:
 
 ## Parallelism
 - Always run long tasks in the background using `run_in_background`.
-- Use subagents for 2+ independent tasks. Never do sequentially what can be done concurrently, except heavy local jobs (see Machine Resources).
+- Use helpers (subagents) for large tasks that can run in parallel; do small ones directly. Never do sequentially what can be done concurrently, except heavy local jobs (see Machine Resources).
 - Subagents do not inherit conversation context. Every delegation must name exact files/paths, the goal or error state, and the expected output.
 - Helper models: helpers run on Sonnet by default (the setup sets it). Use Opus only for design, architecture or a final review of finished work: the architect and code-verifier agents already run on it; otherwise pass `model: "opus"` and say why in one line. Use `haiku` (or the mechanic agent) only for exact, fully specified edits or lookups, never for work described only in prose. A fix loop still failing after 3 rounds moves up one model.
 - Helper cost: a helper sent another message re-reads its whole history, so give each new task a fresh helper with a short brief, and do small fixes, doc edits and pushes yourself. After fix rounds, run one combined re-check, not one per finding (subagent-driven-development keeps its per-task review). Never put helpers on Fable unless asked.
@@ -184,7 +147,6 @@ Every commit must be thorough. Follow this format:
 ## Superpowers
 - Always use superpowers skills wherever applicable. Never skip them because "it's simple."
 - When executing plans: always use `superpowers:subagent-driven-development`. Never ask which approach.
-- Before claiming done: use `superpowers:verification-before-completion`.
 
 ## Critical Rules
 - Never make assumptions about account balances, API limits, send volumes, or resource constraints. Always ask or read from config/env.
@@ -208,7 +170,7 @@ Every commit must be thorough. Follow this format:
 - Every project has a private online copy: code, docs and small data (parsed into JSON, CSV or Markdown) in its private GitHub repo; big or binary files (videos, large PDFs, datasets) in online storage, with a list in the repo of where each one is. Passwords and keys never go in a repo. If a project has no online home yet, say so and offer to set one up; ask me which account to use.
 
 ## Downloads Tidy
-- When a task used files I put in Downloads or on the Desktop, first save what is worth keeping into the project (as above). Then offer to move those files into a `Downloads/Delete/<project>-<date>/` folder I can review and empty. Ask first, never delete, and touch only the files the task used.
+- When a task used files I put in Downloads or on the Desktop, first save what is worth keeping into the project (as above). Then offer to move those files into a `Downloads/Delete/<project>-<date>/` folder I can review and empty. Ask first (unless one of my personal rules says to move them without asking), never delete, and touch only the files the task used.
 
 ## Phase Checkpoints
-- Before starting each new phase of a multi-step task, run a full checkpoint: the tests (if the project has any), all work saved in git, and a 3-line status summary. Do not proceed until green.
+- Before starting each new phase of a multi-step task, run a full checkpoint: the tests (if the project has any), all work saved in git, and a 3-line status summary in the final message. Do not proceed until green.

@@ -4,27 +4,30 @@
 HOME_DEV="$HOME/Documents/dev"
 CWD=$(pwd)
 CONTEXT=""
-REPO_CREATED=""
+NO_GIT_NOTE=""
 
-# Git repo check - only in ~/Documents/dev/*
-if [[ "$CWD" == "$HOME_DEV"/* ]] && ! git rev-parse --git-dir > /dev/null 2>&1; then
-    FOLDER=$(basename "$CWD")
-    if [ ! -f .gitignore ]; then
-        printf 'node_modules/\n.env\n.env.*\n__pycache__/\n*.pyc\n.DS_Store\n.venv/\nvenv/\ndist/\nbuild/\n*.log\n' > .gitignore
-    fi
-    git init -q && git add . && git commit -q -m "chore: initial commit" 2>/dev/null
-    if gh repo create "$FOLDER" --private --source=. --push --quiet 2>/dev/null; then
-        REPO_CREATED="GitHub repo '$FOLDER' created and pushed."
-    else
-        REPO_CREATED="git init done but gh repo create failed (name collision or gh not authed)."
+# A folder with no git of its own that holds projects (ap/, cf/) is not a project: no notes, no files.
+HOLDS_PROJECTS=""
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    for d in "$CWD"/*/.git; do [ -e "$d" ] && HOLDS_PROJECTS=1 && break; done
+fi
+
+# No git yet: never create a repo here (gh would use whatever account is signed in). Measured
+# (no git), at most once a week per folder; Claude asks first, including which GitHub account.
+if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ] && ! git rev-parse --git-dir > /dev/null 2>&1; then
+    MARK_DIR="${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/ap-optimal-claude}/no-git-noted"
+    MARK="$MARK_DIR/$(printf '%s' "$CWD" | cksum | cut -d' ' -f1)"
+    if [ -z "$(find "$MARK" -mtime -7 2>/dev/null)" ]; then
+        mkdir -p "$MARK_DIR" 2>/dev/null && : > "$MARK" 2>/dev/null
+        NO_GIT_NOTE="[NO GIT] This folder ($(basename "$CWD")) has no git and no online copy. Offer in one plain line to start git and a private GitHub repo, and ask which GitHub account to use. Do nothing until the user says yes."
     fi
 fi
 
 # Online copy check - only in ~/Documents/dev/*: a repo with no remote lives on this computer
 # alone. Measured (git has no remote), at most once a week per project (marker in the plugin's
-# data folder), and skipped when this session just tried to create the repo.
+# data folder), and skipped when the folder has no git at all.
 ONLINE_NOTE=""
-if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$REPO_CREATED" ] && git rev-parse --git-dir > /dev/null 2>&1 \
+if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$NO_GIT_NOTE" ] && git rev-parse --git-dir > /dev/null 2>&1 \
         && [ -z "$(git remote 2>/dev/null)" ] && [ "$(git config --get ap.localOnly 2>/dev/null)" != "true" ]; then
     TOP=$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD")  # the project, not a subfolder
     MARK_DIR="${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/ap-optimal-claude}/online-copy-noted"
@@ -32,12 +35,12 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$REPO_CREATED" ] && git rev-parse --gi
     if [ -z "$(find "$MARK" -mtime -7 2>/dev/null)" ]; then
         mkdir -p "$MARK_DIR" 2>/dev/null && : > "$MARK" 2>/dev/null
         NAME=$(basename "$TOP")
-        ONLINE_NOTE="[NO ONLINE COPY] This project ($NAME) exists only on this computer: git has no remote, so a lost or broken laptop loses it. Tell the user in one plain line and offer to create a private GitHub repo and push it (from $TOP: gh repo create $NAME --private --source=. --push). If they say not now, drop it (this note comes back at most once a week); if they never want one for this project, run: git config ap.localOnly true"
+        ONLINE_NOTE="[NO ONLINE COPY] This project ($NAME) exists only on this computer: git has no remote, so a lost or broken laptop loses it. Tell the user in one plain line and offer to create a private GitHub repo and push it, asking which GitHub account to use (from $TOP: gh repo create $NAME --private --source=. --push). If they say not now, drop it (this note comes back at most once a week); if they never want one for this project, run: git config ap.localOnly true"
     fi
 fi
 
 # STATUS.md check - only in ~/Documents/dev/*
-if [[ "$CWD" == "$HOME_DEV"/* ]] && [ ! -f STATUS.md ]; then
+if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ] && [ ! -f STATUS.md ]; then
     cat > STATUS.md << 'STATUSMD'
 # Project Status
 
@@ -99,10 +102,21 @@ if [ -n "$SYNC_NOTES" ]; then
     CONTEXT="$CONTEXT"$'\n'"[SETUP UPDATED BY THE TEAM PLUGIN] Mention these in one short line at the start of your response:"$'\n'"$SYNC_NOTES"
 fi
 
+# Daily self-update (scripts/self_update.py): reports what the last background run did and,
+# at most once a day, starts the next one detached, so this never waits for the network.
+UPDATE_NOTES=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/self_update.py" check 2>/dev/null)
+if [ -n "$UPDATE_NOTES" ]; then
+    CONTEXT="$CONTEXT"$'\n'"[SETUP NOTE] Tell the user each of these in one plain line at the start of your response:"$'\n'"$UPDATE_NOTES"
+fi
+
+# Legacy tasks/lessons.md (pre-migration, not yet ported to Auto Memory): tell Claude to use it
+LESSONS_NOTE=""
+[ -f "$CWD/tasks/lessons.md" ] && LESSONS_NOTE="This project still has tasks/lessons.md (old-style lessons). Read it silently now and apply its rules for this session."
+
 # Append instruction Claude will actually see (additionalContext, not systemMessage)
 STARTUP_MSG=$'\n[SESSION START]'
-[ -n "$REPO_CREATED" ] && STARTUP_MSG="$STARTUP_MSG $REPO_CREATED"
-STARTUP_MSG="$STARTUP_MSG Invoke the startup skill now (Skill tool, skill=\"ap-optimal-claude:startup\") to list relevant skills. Watch the context % in the status bar. Long sessions cost more of the plan with every message and can drift; type 'handoff' at 40% context."
+[ -n "$NO_GIT_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $NO_GIT_NOTE"
+[ -n "$LESSONS_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $LESSONS_NOTE"
 CONTEXT="$CONTEXT$STARTUP_MSG"
 
 printf '%s' "$CONTEXT" | "$PYTHON" -c "

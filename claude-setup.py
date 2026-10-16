@@ -39,6 +39,12 @@ HOME = os.path.expanduser("~")
 CLAUDE_DIR = os.path.join(HOME, ".claude")
 HOOKS_DIR = os.path.join(CLAUDE_DIR, "hooks")
 
+# The setup's plugin marketplace. Written only here: the own-name copy's rebrand
+# (scripts/rebrand_public.py) rewrites these two lines, and the rest of the file uses them.
+MARKETPLACE = "apurv-ed"
+MARKETPLACE_REPO = "Apurv-ed/best-claude-code-setup"
+PLUGIN = "ap-optimal-claude"
+
 
 # ---------------------------------------------------------------------------
 # Team rules (formerly the CLAUDE.md body) and the shared skills
@@ -79,6 +85,9 @@ def get_settings():
                 # Credential paths (Trail of Bits hardening pattern)
                 "Read(~/.ssh/**)",
                 "Read(~/.aws/**)",
+                "Read(~/.oci/**)",
+                "Read(~/.config/gcloud/**)",
+                "Read(~/.azure/**)",
                 "Read(~/.kube/**)",
                 "Read(~/.gnupg/**)",
                 "Read(~/.npmrc)",
@@ -97,16 +106,15 @@ def get_settings():
         # Team gets stronger reasoning when planning without paying Opus rates for everything.
         # Default for NEW installs only: merge_settings keeps any model the user already chose.
         "model": "opusplan",
-        # Pre-declare the team marketplace with auto-update ON and the plugin
-        # enabled, so a single installer run wires up continuous updates: skills,
-        # agents, and hooks (which now live in the plugin) flow to the user on
-        # every restart with zero further action. The CLI install step below is
-        # a belt-and-suspenders fallback for older clients.
+        # Pre-declare the team marketplace (autoUpdate on; the plugin's sync puts it
+        # back every session because `claude plugin marketplace add` strips it) and
+        # enable the plugin. The plugin also checks for a new version daily and
+        # updates itself, so updates do not depend on this flag alone.
         "extraKnownMarketplaces": {
-            "apurv-ed": {
+            MARKETPLACE: {
                 "source": {
                     "source": "github",
-                    "repo": "Apurv-ed/best-claude-code-setup"
+                    "repo": MARKETPLACE_REPO
                 },
                 "autoUpdate": True
             }
@@ -116,7 +124,7 @@ def get_settings():
         # marketplace, which auto-updates by default. Context7 needs a one-time
         # sign-in via /mcp before it answers.
         "enabledPlugins": {
-            "ap-optimal-claude@apurv-ed": True,
+            f"{PLUGIN}@{MARKETPLACE}": True,
             "superpowers@claude-plugins-official": True,
             "context7@claude-plugins-official": True
         },
@@ -284,8 +292,7 @@ def get_notification_hook():
 # ---------------------------------------------------------------------------
 # Hook scripts have moved to the ap-optimal-claude plugin
 # ---------------------------------------------------------------------------
-# The four bash hooks (pre-commit-check, session-start, pre-compact,
-# stop-self-review) now live in plugins/ap-optimal-claude/hooks/ and are
+# The bash hooks (pre-commit-check, session-start, stop-self-review) now live in plugins/ap-optimal-claude/hooks/ and are
 # registered via that plugin's hooks/hooks.json, so they auto-update with the
 # rest of the kit. Only the OS-specific Notification hook (get_notification_hook
 # above) is still installed directly into settings.json by this script, because
@@ -432,27 +439,88 @@ def run_plugin_sync():
         return False
 
 
-def install_team_plugin():
-    """Belt-and-suspenders plugin install via the claude CLI.
+def find_claude():
+    """The claude CLI: $CLAUDE_CODE_EXECPATH when it names a file (desktop app sessions may
+    have no claude on PATH), else claude on PATH (claude.cmd on Windows via PATHEXT)."""
+    exe = os.environ.get("CLAUDE_CODE_EXECPATH", "")
+    if exe and os.path.isfile(exe):
+        return exe
+    return shutil.which("claude")
 
-    settings.json already pre-declares the marketplace (auto-update ON) and
-    enables the plugin via extraKnownMarketplaces + enabledPlugins, so on most
-    clients the plugin installs and stays current with no CLI step. This runs
-    the explicit CLI commands anyway to cover older clients that do not act on
-    those settings keys.
+
+def copy_installed(key):
+    """True when ~/.claude/plugins/installed_plugins.json lists `key` (PLUGIN@MARKETPLACE)
+    as installed for the user."""
+    path = os.path.join(CLAUDE_DIR, "plugins", "installed_plugins.json")
+    try:
+        with open(path, encoding="utf-8-sig") as f:
+            entries = (json.load(f).get("plugins") or {}).get(key) or []
+    except (OSError, ValueError, AttributeError):
+        return False
+    return any(isinstance(e, dict) and e.get("scope", "user") == "user" for e in entries)
+
+
+def own_copy_installed():
+    """True when this installer's own copy is installed for the user."""
+    return copy_installed(f"{PLUGIN}@{MARKETPLACE}")
+
+
+def disable_other_copies():
+    """Keep exactly one copy of ap-optimal-claude on and turn every other one off. With two
+    copies enabled only one runs its hooks and every skill loads twice. The copy to keep is
+    the own-name one (apurv-ed) when it is installed, because the daily self-update moves
+    people there and must not be undone by re-running this installer; otherwise this
+    installer's own copy. Re-reads settings.json, because the `claude plugin` commands
+    rewrite it. Does nothing unless this installer's own copy is really installed: turning
+    off the working copy first would leave no plugin at all."""
+    if not own_copy_installed():
+        print("  [!] The plugin install did not finish, so your current setup stays on. Please re-run the setup.")
+        return []
+    path = os.path.join(CLAUDE_DIR, "settings.json")
+    try:
+        with open(path, encoding="utf-8-sig") as f:
+            settings = json.load(f)
+    except (OSError, ValueError):
+        return []
+    enabled = settings.get("enabledPlugins")
+    if not isinstance(enabled, dict):
+        return []
+    own_name = f"{PLUGIN}@apurv-ed"
+    mine = own_name if copy_installed(own_name) else f"{PLUGIN}@{MARKETPLACE}"
+    off = [k for k, v in enabled.items() if k.startswith(PLUGIN + "@") and k != mine and v is not False]
+    if off or enabled.get(mine) is not True:
+        for k in off:
+            enabled[k] = False
+        enabled[mine] = True
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(settings, f, indent=2)
+    for k in off:
+        print(f"  [OK] turned off the second copy {k} (only {mine} stays on)")
+    return off
+
+
+def install_team_plugin():
+    """Install the plugin with the claude CLI and bring an existing install up to date.
+
+    `plugin install` does nothing when the plugin is already installed, so it is always
+    followed by `plugin marketplace update` + `plugin update` (the pair that really
+    updates; `plugin update` alone right after a refresh can wrongly say "latest").
     """
-    claude_bin = shutil.which("claude")
+    claude_bin = find_claude()
+    plugin_ref = f"{PLUGIN}@{MARKETPLACE}"
     if not claude_bin:
-        print("  [SKIP] claude CLI not on PATH - settings.json already enables the")
+        print("  [SKIP] claude CLI not found - settings.json already enables the")
         print("         plugin, so it should install on restart. If it does not, run:")
-        print("         /plugin marketplace add Apurv-ed/best-claude-code-setup")
-        print("         /plugin install ap-optimal-claude@apurv-ed")
+        print(f"         /plugin marketplace add {MARKETPLACE_REPO}")
+        print(f"         /plugin install {plugin_ref}")
+        disable_other_copies()
         return
     steps = [
-        (["plugin", "marketplace", "add", "Apurv-ed/best-claude-code-setup"],
-         "marketplace apurv-ed"),
-        (["plugin", "install", "ap-optimal-claude@apurv-ed"],
-         "plugin ap-optimal-claude"),
+        (["plugin", "marketplace", "add", MARKETPLACE_REPO], f"marketplace {MARKETPLACE}"),
+        (["plugin", "install", plugin_ref], f"plugin {PLUGIN}"),
+        # Re-running the installer must update an old install, not just say "installed"
+        (["plugin", "marketplace", "update", MARKETPLACE], f"marketplace {MARKETPLACE} refresh"),
+        (["plugin", "update", plugin_ref], f"plugin {PLUGIN} update"),
         # Anthropic's official marketplace: registered on a first interactive
         # session, but a fresh machine may not have it yet.
         (["plugin", "marketplace", "add", "anthropics/claude-plugins-official"],
@@ -469,10 +537,11 @@ def install_team_plugin():
             tail = out.splitlines()[-1] if out else "done"
             print(f"  [{'OK' if r.returncode == 0 else '!'}] {label}: {tail}")
             if r.returncode != 0:
-                print("      If this keeps failing, run inside Claude Code: /plugin install ap-optimal-claude@apurv-ed")
+                print(f"      If this keeps failing, run inside Claude Code: /plugin install {plugin_ref}")
         except Exception as exc:
             print(f"  [!] {label} failed ({exc})")
-            print("      Run inside Claude Code: /plugin install ap-optimal-claude@apurv-ed")
+            print(f"      Run inside Claude Code: /plugin install {plugin_ref}")
+    disable_other_copies()
 
 
 GIT_BASH_MISSING = """
@@ -626,14 +695,14 @@ def setup():
     print(f"Skills, hooks:  via the ap-optimal-claude plugin (auto-updating)")
 
     print("\n--- Continuous updates (auto-configured) ---")
-    print("  The plugin's marketplace is registered with auto-update ON. Skills, agents,")
-    print("  hooks, the team rules and new safety blocks arrive automatically: downloaded")
-    print("  during one session, active from the next. You should not need to re-run this.")
+    print("  updates: checked daily by the setup itself. Skills, agents, hooks, the team")
+    print("  rules and new safety blocks arrive automatically: downloaded during one")
+    print("  session, active from the next. You should not need to re-run this.")
 
     print("\n--- Token optimization (auto-configured) ---")
-    print("  MAX_THINKING_TOKENS=10000     (caps the extended-thinking budget)")
+    print("  MAX_THINKING_TOKENS=10000     (caps the thinking budget; affects older models only)")
 
-    print("  Stop hook (via plugin)         (self-review pass when code was edited)")
+    print("  Stop hook (via plugin)         (asks for a real check when code changed and nothing was run after)")
 
     print("\n--- How to use ---")
     print("  ccx             Start Claude Code (auto mode + deny-rule guardrails)")
@@ -659,7 +728,8 @@ def setup():
     print("  rm -rf / rm -fr / sudo rm   (recursive deletion)")
     print("  git push --force / -f       (overwriting remote history)")
     print("  Read .env / .env.*          (secrets stay out of context)")
-    print("  These are hard blocks in every permission mode (verified live).")
+    print("  These rules block the command as written in every permission mode.")
+    print("  (They match the text of the command, so they stop the common cases, not every possible workaround.)")
     print("  Default mode is 'auto': a safety check stops other risky actions")
     print("  (wiping unsaved work, running downloaded scripts) without asking you each time.\n")
     if git_bash_missing:

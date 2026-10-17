@@ -41,7 +41,7 @@ def is_record(rel):
     dated names or folders (2026-06-11 or 20260611), history folders."""
     parts = rel.replace("\\", "/").split("/")
     name = parts[-1].upper()
-    return (name.startswith("CHANGELOG") or name in ("SESSION_HANDOFF.MD", "LESSONS.MD")
+    return (name.startswith("CHANGELOG") or name in ("SESSION_HANDOFF.MD", "SESSION_MESSAGES.MD", "LESSONS.MD")
             or any(DATED.search(p) for p in parts)
             or any(p.lower() in HISTORY_DIRS for p in parts[:-1]))
 

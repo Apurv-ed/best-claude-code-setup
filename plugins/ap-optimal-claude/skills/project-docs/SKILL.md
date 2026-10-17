@@ -18,6 +18,7 @@ Principle (Google docguide, Write the Docs): a small set of fresh, accurate docs
 | Instructions for Claude | `CLAUDE.md` | Commands, conventions, gotchas. Under 200 lines. No status or history. |
 | Research, transcripts | `docs/research/YYYY-MM-DD-topic.md`, `docs/transcriptions/` | Written once with a one-line summary at the top; not kept "current". |
 | Unfinished work between sessions | `docs/SESSION_HANDOFF.md` | Temporary; ignored by the session hook once newer commits exist. |
+| Messages from another project's session | `docs/SESSION_MESSAGES.md` | Temporary, never committed; shown at every session start until each message is dealt with and removed (team rule "Project Boundaries"). |
 
 Create other files only when there is real content: `METRICS.md` when the project measures something; nothing "just in case".
 

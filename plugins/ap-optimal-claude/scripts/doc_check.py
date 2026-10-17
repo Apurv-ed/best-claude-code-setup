@@ -34,12 +34,12 @@ FROZEN_DIRS = ("docs/research", "docs/transcriptions", "docs/archive", "docs/pla
 HISTORY_FILES = ("CHANGELOG.md",)  # broken links here are warnings only
 KNOWN_DOCS = {"STATUS.md", "README.md", "CHANGELOG.md", "CLAUDE.md", "CLAUDE.local.md", "AGENTS.md",
               "METRICS.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", "CODE_OF_CONDUCT.md",
-              "LICENSE.md", "docs/SESSION_HANDOFF.md", "docs/decisions.md"}
+              "LICENSE.md", "docs/SESSION_HANDOFF.md", "docs/SESSION_MESSAGES.md", "docs/decisions.md"}
 MADR_NAME = re.compile(r"^\d{4}-[a-z0-9-]+\.md$")
 STATUS_LINE = re.compile(r"^\s*(?:[*-]\s*)?status:\s*(.*?)\s*$", re.I | re.M)
 PLACEHOLDER_GOAL = "[describe the end goal here]"
 MAX_UNLISTED_SHOWN = 8
-EXEMPT_FROM_STATUS_HEADINGS = ("CHANGELOG.md", "STATUS.md", "docs/SESSION_HANDOFF.md")
+EXEMPT_FROM_STATUS_HEADINGS = ("CHANGELOG.md", "STATUS.md", "docs/SESSION_HANDOFF.md", "docs/SESSION_MESSAGES.md")
 STATUS_HEADING = re.compile(r"^##\s+(now|next|next steps|done|in progress|blockers?(\s*/\s*decisions)?)\s*$", re.I)
 GOAL_HEADING = re.compile(r"^##\s+end goal\b", re.I)
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)\)")

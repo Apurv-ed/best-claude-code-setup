@@ -1,6 +1,6 @@
 ---
 name: reaudit
-description: Use when the user types "reaudit", "reaudit project" or "reaudit <path or topic>", or explicitly asks for a thorough multi-angle audit of finished work or a whole project (double-check everything, poke holes, simulate, cross-question, audit end to end).
+description: Use when the user types "reaudit", "reaudit project", "reaudit <path or topic>" or "reaudit loop" (repeat the audit until no major problem is left), or explicitly asks for a thorough multi-angle audit of finished work or a whole project (double-check everything, poke holes, simulate, cross-question, audit end to end).
 ---
 
 # Reaudit
@@ -63,6 +63,17 @@ Checkers are wrong too. For each high or medium finding:
 3. "Checked and held up": one line per checker, by its plain name, on what was tried and survived, so the user can see the depth.
 4. Questions for the user, last.
 
+## Reaudit loop
+
+Same audit, repeated until a round finds no major problem. For work that could cost revenue or break something critical: live sites, payments, client emails or data, production, data loss, security.
+
+- Start it when the user types `reaudit loop` (also `reaudit loop project` or `reaudit loop <path or topic>`; same scopes as above), or when you judge the work high-stakes. If you are not sure, do not start it: ask the user "Do you want to run the reaudit loop?" with your recommendation and a one-line reason.
+- Round 1: run Steps 1-4 as written.
+- If any HIGH (major) finding survives Step 4: fix every proven finding (Step 5's "ask first" list still applies), run the full tests, then start a NEW round: Steps 1-4 again with fresh checkers (not only the ones that found it), planned again from the changed work.
+- Stop when a round has no surviving high finding. Medium and low findings are fixed or reported; they do not start another round.
+- At most 4 rounds. If high findings remain after round 4, stop and report them with options (fix differently, accept the risk, change the approach).
+- Every round uses plan usage: say the round count in the report (Step 6). Step 5's "at most 2 rounds" applies to plain `reaudit` only.
+
 ## Red Flags (stop and redo the step)
 
 - A finding marked fixed with no test run after the fix.
@@ -70,3 +81,4 @@ Checkers are wrong too. For each high or medium finding:
 - A duty from Step 2 with no checker owning it, or checkers launched one after another.
 - Checkers named after generic angles when the work has obvious parts of its own.
 - Reporting a checker's finding without reproducing it.
+- In a loop: reusing the old checkers for the next round, or starting another round for medium or low findings only.

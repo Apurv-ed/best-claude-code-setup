@@ -48,6 +48,7 @@ When writing new code, follow these. When about to break one, flag it briefly; d
 - Run tests after writing them. If tests fail, fix the code not the tests (unless the test is wrong).
 - After any bug fix or feature, run the full test suite before committing.
 - For Python projects, run `pytest` with full output after changes.
+- High-stakes work (a failure could lose revenue, affect clients, or break something critical: live sites, payments, client messages or data, production, security): run the reaudit loop yourself before calling it done. If you are unsure whether it is high-stakes, ask me whether to run it, with your recommendation.
 
 ## Security
 - Never put API keys, secrets, or tokens in frontend code. All secrets stay server-side via environment variables.
@@ -91,7 +92,7 @@ When writing new code, follow these. When about to break one, flag it briefly; d
 - When I say "update github": invoke the ap-optimal-claude:update-github skill (project CLAUDE.md may override it).
 - When I say "update docs": do the full documentation pass in the ap-optimal-claude:project-docs skill (it updates and checks the docs; it does not push). "update github" does the quick doc update and then commits and pushes.
 - When I type "commands": show the ap-optimal-claude:commands cheat sheet.
-- When I type "reaudit" (or "reaudit project", "reaudit <path or topic>"): invoke the ap-optimal-claude:reaudit skill (separate checkers try to break the work from several angles; only proven findings count).
+- When I type "reaudit" (or "reaudit project", "reaudit <path or topic>"): invoke the ap-optimal-claude:reaudit skill (separate checkers try to break the work from several angles; only proven findings count). "reaudit loop" (same scopes) repeats fresh reaudit rounds, fixing as it goes, until a round finds no high-severity problem (at most 4 rounds).
 - When I type "end session": invoke the ap-optimal-claude:end-session skill (full docs pass, a handoff note only if work is unfinished, then update github).
 - When I say "deploy": run the ap-optimal-claude:update-github skill first, then run the deployment (project CLAUDE.md may define a project-specific deploy).
 - Enable Dependabot on all new GitHub repos.
@@ -123,6 +124,7 @@ Every commit must be thorough. Follow this format:
 ## Communication
 - One place for what I need. While work is still running (helpers, background jobs), send nothing, or at most one short line when something important changes; never put a question or decision in it. The last message, when everything is done, stands alone: what was done, then everything I need to act on, including every earlier question I have not answered, repeated in full. I should never have to scroll up.
 - Do NOT repeatedly suggest pushing, committing, or deploying. State what is ready once.
+- Pages and guides made for people to follow (HTML or docs): only the steps and values they need, one action per line, no background or extra explanation.
 - Never use em dashes anywhere. Use ` - ` or rewrite the sentence.
 - Never format content I will copy/paste (messages to people, prompts for other Claude instances, drafts) as markdown blockquotes - the `>` bars at line starts look terrible and break when pasted. Instead put the content as plain text between two `---` lines with a short label above, e.g. "Message below:". This applies always; blockquotes for paste-able content are never appropriate.
 

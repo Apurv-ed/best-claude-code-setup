@@ -31,7 +31,7 @@ Then check coverage. Each of these duties must be owned by at least one named ch
 
 Real actions: if the only real proof needs a real action (submit the live form, send a test email, a test payment), list those now and ask the user once, before launching, whether to include them and with which test data.
 
-Agent: `general-purpose` for anything that runs, browses or researches; `ap-optimal-claude:code-verifier` for checking claims and files. Pass `model: "opus"` to each `general-purpose` checker: helpers default to Sonnet, and a reaudit is a final review.
+Agent: `general-purpose` for anything that runs, browses or researches; `ap-optimal-claude:code-verifier` for checking claims and files. Model, named on every call: `model: "opus"` only for the checker that owns Approach or Safety (judgement is what they add); every other checker gets `model: "sonnet"` (running, browsing, edge cases and matching claims to sources do not need Opus; `sonnet` must be named for `code-verifier`, whose own file says Opus). Step 4's refute pass keeps Opus.
 
 ## Step 3: Send the checkers, all in one message
 
@@ -53,7 +53,7 @@ Checkers are wrong too. For each high or medium finding:
 
 ## Step 5: Fix and re-check
 
-- Proven defects in this session's own work: fix them, run the full tests, then send only the checker that found each defect again (fresh agent). At most 2 rounds.
+- Proven defects in this session's own work: fix them, run the full tests, then send only the checker that found each defect again (fresh agent, `model: "sonnet"`: it confirms a fix). At most 2 rounds.
 - Ask first before: a change of approach, anything outside the scope, anything destructive or hard to undo.
 
 ## Step 6: Report
@@ -69,7 +69,7 @@ Same audit, repeated until a round finds no major problem. For work that could c
 
 - Start it when the user types `reaudit loop` (also `reaudit loop project` or `reaudit loop <path or topic>`; same scopes as above), or when you judge the work high-stakes. If you are not sure, do not start it: ask the user "Do you want to run the reaudit loop?" with your recommendation and a one-line reason.
 - Round 1: run Steps 1-4 as written.
-- If any HIGH (major) finding survives Step 4: fix every proven finding (Step 5's "ask first" list still applies), run the full tests, then start a NEW round: Steps 1-4 again with fresh checkers (not only the ones that found it), planned again from the changed work.
+- If any HIGH (major) finding survives Step 4: fix every proven finding (Step 5's "ask first" list still applies), run the full tests, then start a NEW round: Steps 1-4 again with fresh checkers (not only the ones that found it), planned again from the changed work. From round 2 every checker runs on `sonnet` except the one owning Approach, which stays on `opus`.
 - Stop when a round has no surviving high finding. Medium and low findings are fixed or reported; they do not start another round.
 - At most 4 rounds. If high findings remain after round 4, stop and report them with options (fix differently, accept the risk, change the approach).
 - Every round uses plan usage: say the round count in the report (Step 6). Step 5's "at most 2 rounds" applies to plain `reaudit` only.
@@ -81,4 +81,5 @@ Same audit, repeated until a round finds no major problem. For work that could c
 - A duty from Step 2 with no checker owning it, or checkers launched one after another.
 - Checkers named after generic angles when the work has obvious parts of its own.
 - Reporting a checker's finding without reproducing it.
+- A checker launched without a model named, or on Opus when it owns neither Approach nor Safety.
 - In a loop: reusing the old checkers for the next round, or starting another round for medium or low findings only.

@@ -37,8 +37,9 @@ MANAGED_SCALARS = {"skillListingBudgetFraction": 0.02}
 SUBAGENT_DEFAULT_MODEL = "sonnet"
 SUBAGENT_DEFAULT_MIN_VERSION = (2, 1, 251)  # from here the variable is only a fallback
 RULES_NAME = "ap-optimal-claude.md"
-RULES_HEADER = ("<!-- Managed by the ap-optimal-claude plugin: refreshed every session, edits here are overwritten.\n"
+RULES_HEADER = ("<!-- Managed by the ap-optimal-claude plugin (v{version}): refreshed every session, edits here are overwritten.\n"
                 "     Put personal rules in another file in this folder. -->\n# Claude Code Instructions (team rules)\n\n")
+RULES_VERSION = re.compile(r"ap-optimal-claude plugin \(v(\d+(?:\.\d+)*)\)")
 MIGRATION_MARKER = "migrations.json"
 DEFAULT_STATUSLINE = "npx -y ccstatusline@2"  # what claude-setup.py installs
 BAR_VERSION = "2.2.32"  # exact pin: a plugin release that changes it reinstalls the bar
@@ -86,12 +87,33 @@ def backup(path: Path, claude_dir: Path) -> None:
         target.write_bytes(path.read_bytes())
 
 
+def version_tuple(text):
+    try:
+        return tuple(int(p) for p in text.split("."))
+    except (AttributeError, ValueError):
+        return None
+
+
+def plugin_version(root: Path):
+    try:
+        return json.loads((root / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")).get("version", "0")
+    except (OSError, ValueError):
+        return "0"
+
+
 def sync_rules(root: Path, claude_dir: Path, notes: list) -> set:
     core = (root / "rules" / "core.md").read_text(encoding="utf-8")
     plat = (root / "rules" / f"platform-{platform_name()}.md").read_text(encoding="utf-8")
-    content = RULES_HEADER + plat.rstrip("\n") + "\n\n" + core
+    version = plugin_version(root)
+    content = RULES_HEADER.format(version=version) + plat.rstrip("\n") + "\n\n" + core
     target = claude_dir / "rules" / RULES_NAME
-    if not target.exists() or target.read_text(encoding="utf-8") != content:
+    existing = target.read_text(encoding="utf-8") if target.exists() else ""
+    stamp = RULES_VERSION.search(existing[:300])
+    written_by = version_tuple(stamp.group(1)) if stamp else None
+    if written_by and (version_tuple(version) or ()) < written_by:
+        # a session still running an older plugin version: never roll newer rules back
+        return {h.strip() for h in re.findall(r"(?m)^## .+$", existing)}
+    if existing != content:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         notes.append("team rules updated (~/.claude/rules/ap-optimal-claude.md)")

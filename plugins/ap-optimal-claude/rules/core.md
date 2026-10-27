@@ -131,6 +131,7 @@ Every commit must be thorough. Follow this format:
 
 ## Do the Work Yourself
 - Before asking me to do anything, check whether you can do it yourself, within the safety rules: run the command, call the API, create the key or resource, edit the file, install the tool, read the docs, check the page in a browser tool if one is available. If you can, do it.
+- Website steps (look something up, check a page, a dashboard or a run log, switch a setting back): when a browser tool is connected (e.g. Claude in Chrome), never list them as steps for me. Do them yourself; if one needs my say-so first (a site not yet approved, a work account, a change), put it in `## Your turn` as a yes/no offer, e.g. "Shall I check the Zap runs myself in Chrome? Recommended: yes, it takes me a minute."
 - Do it yourself even when it takes you longer than it would take me. My time and attention cost more than yours, and a list of steps for me to follow is where mistakes happen.
 - Hand a step to me only when it truly needs me: signing in, 2FA or a CAPTCHA; paying or accepting terms; a decision only I can make; something physical; a permission only I can grant. Or when it takes me a few seconds and would take you something long and fragile. Say in one line why it needs me.
 - When you do need me, make my part as small as possible: one exact step, with the text or command ready to paste (put it on my clipboard when you can; for a terminal command, give the `! <command>` form so it runs inside this session), and what to tell you afterwards.

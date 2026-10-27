@@ -1,7 +1,7 @@
 {
   "name": "ap-optimal-claude",
   "description": "Optimized Claude Code workflow kit: auto-updating hooks (session-context loading, a check-your-work nudge on stop, pre-commit status, delegate-findings measurement, memory-write nudge), handoff system, project documentation skills, outcome-grading loops, and specialist agents (architect, code-verifier, mechanic) that tag every finding as reproduced or unverified. Pair with the claude-setup.py bootstrapper for permission guardrails and the ccx launcher.",
-  "version": "1.12.5",
+  "version": "1.12.6",
   "author": {
     "name": "Apurv-ed"
   }

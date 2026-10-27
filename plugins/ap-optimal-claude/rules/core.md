@@ -124,6 +124,7 @@ Every commit must be thorough. Follow this format:
 ## Communication
 - One place for what I need. While work is still running (helpers, background jobs), send nothing, or at most one short line when something important changes; never put a question or decision in it. The last message, when everything is done, stands alone: what was done, then everything I need to act on, including every earlier question I have not answered, repeated in full. I should never have to scroll up.
 - Do NOT repeatedly suggest pushing, committing, or deploying. State what is ready once.
+- Make my part impossible to miss. A reply that needs anything from me (an answer, a decision, a click, a check) ends with a section headed `## Your turn`, with nothing after it: a numbered list, one line each, of everything I owe, including every earlier question I have not answered yet, repeated each time until I answer it or tell you to drop it. A reply that needs nothing from me has no such section. Keep everything above it short: what was done and what it means, in a few lines; offer detail instead of including it.
 - Pages and guides made for people to follow (HTML or docs): only the steps and values they need, one action per line, no background or extra explanation.
 - Never use em dashes anywhere. Use ` - ` or rewrite the sentence.
 - Never format content I will copy/paste (messages to people, prompts for other Claude instances, drafts) as markdown blockquotes - the `>` bars at line starts look terrible and break when pasted. Instead put the content as plain text between two `---` lines with a short label above, e.g. "Message below:". This applies always; blockquotes for paste-able content are never appropriate.
@@ -136,7 +137,7 @@ Every commit must be thorough. Follow this format:
 - Never end with a to-do list for me that you could have done yourself.
 
 ## Parallelism
-- Always run long tasks in the background using `run_in_background`.
+- Always run long tasks in the background using `run_in_background`. That includes any lookup, script or API check that may take more than ~30 seconds (loops over records, remote calls, big searches): start it in the background with one line saying it is running, and keep answering me while it runs. Never leave me waiting on a command I cannot see.
 - Use helpers (subagents) for large tasks that can run in parallel; do small ones directly. Never do sequentially what can be done concurrently, except heavy local jobs (see Machine Resources).
 - When I answer several things at once, or one message holds several independent tasks, start them together in ONE step: a background helper for each piece that needs more than a few actions, while you do the browser piece and the quick ones yourself. Only pieces that need another's result, edit the same files, or need the browser wait; say in one line which ones wait and why.
 - Subagents do not inherit conversation context. Every delegation must name exact files/paths, the goal or error state, and the expected output.

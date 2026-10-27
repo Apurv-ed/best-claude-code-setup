@@ -263,7 +263,10 @@ def get_notification_hook():
     if IS_MAC:
         return {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Hero.aiff & open -g /Applications/Utilities/Terminal.app"
+            # Terminal is opened only for terminal sessions (entrypoint "cli", or unset on old
+            # versions): the desktop app and IDE extensions have their own window to bring up.
+            "command": ("afplay /System/Library/Sounds/Hero.aiff & "
+                        'case "$CLAUDE_CODE_ENTRYPOINT" in ""|cli) open -g /Applications/Utilities/Terminal.app;; esac')
         }
     elif IS_WINDOWS:
         return {

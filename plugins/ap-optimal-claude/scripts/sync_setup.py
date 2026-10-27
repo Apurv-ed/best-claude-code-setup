@@ -16,7 +16,8 @@ Steps:
 4. Settings: add any missing baseline deny rule (add-only), keep the scalar MANAGED keys,
    ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected), and
    replace the old installer's Windows notification command (byte-exact match only), which
-   Git Bash broke by expanding its "$null". Keep auto-update on for this setup's marketplace:
+   Git Bash broke by expanding its "$null", and its Mac one, which opened Terminal even in
+   desktop app sessions. Keep auto-update on for this setup's marketplace:
    `claude plugin marketplace add` drops the key, and third-party marketplaces default to off
    (an explicit "off", in settings or under /plugin, is respected). The same for the own-name
    marketplace once the setup comes from there. Add FORCE_AUTOUPDATE_PLUGINS=1 to env when
@@ -65,6 +66,15 @@ WIN_NOTIFY_OLD = ('powershell.exe -c "[System.Media.SystemSounds]::Exclamation.P
                   "-Text 'Claude Code','Needs your attention' -ErrorAction SilentlyContinue\"")
 WIN_NOTIFY_NEW = ('powershell.exe -c "[System.Media.SystemSounds]::Exclamation.Play(); New-BurntToastNotification '
                   "-Text 'Claude Code','Needs your attention' -ErrorAction SilentlyContinue | Out-Null\"")
+# Mac notification hook: the old command also opened Terminal in desktop-app and IDE sessions;
+# the new one (must equal claude-setup.py get_notification_hook() on Mac) only in terminal sessions.
+MAC_NOTIFY_OLD = "afplay /System/Library/Sounds/Hero.aiff & open -g /Applications/Utilities/Terminal.app"
+MAC_NOTIFY_NEW = ("afplay /System/Library/Sounds/Hero.aiff & "
+                  'case "$CLAUDE_CODE_ENTRYPOINT" in ""|cli) open -g /Applications/Utilities/Terminal.app;; esac')
+NOTIFY_REPAIRS = {
+    WIN_NOTIFY_OLD: (WIN_NOTIFY_NEW, "repaired the Windows 'Claude needs you' notification sound"),
+    MAC_NOTIFY_OLD: (MAC_NOTIFY_NEW, "the 'Claude needs you' sound no longer opens Terminal in desktop app sessions"),
+}
 
 
 def platform_name():
@@ -302,10 +312,10 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
         notes.append(f"added {len(missing)} safety block rule(s) to settings.json")
     for group in (s.get("hooks") or {}).get("Notification") or []:
         for hook in (group.get("hooks") or []) if isinstance(group, dict) else []:
-            if isinstance(hook, dict) and hook.get("command") == WIN_NOTIFY_OLD:
-                hook["command"] = WIN_NOTIFY_NEW
+            if isinstance(hook, dict) and hook.get("command") in NOTIFY_REPAIRS:
+                hook["command"], note = NOTIFY_REPAIRS[hook["command"]]
                 changed = True
-                notes.append("repaired the Windows 'Claude needs you' notification sound")
+                notes.append(note)
     marker = data_dir / MIGRATION_MARKER
     done = read_migrations(marker)
     if not done.get("bypass_to_auto"):

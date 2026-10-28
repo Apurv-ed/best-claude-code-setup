@@ -43,14 +43,10 @@ These are new settings/features the user doesn't have. Add them unless the user 
 **CLAUDE.md Context Efficiency section** (add if not present):
 ```markdown
 ## Context Efficiency
-- Do not echo back file contents you just read.
-- Do not narrate tool calls ("Let me read the file..."). Just do it.
-- Keep explanations proportional to complexity. No preambles or sycophantic language.
-- Never re-read a file already read in this session.
-- For files over 500 lines, use offset/limit to read only the relevant section.
-- Use Grep to locate sections before reading entire files.
-- When dispatching subagents, end prompts with: "Final response under 2000 characters."
-- Do not paste file contents into subagent prompts. Give them the path and let them read it.
+- Never echo files you read, narrate tool calls, or re-read a file already read this session.
+- Grep to find a section before reading a whole file; over 500 lines, read only that part. For a component's API contract, read its interface before its implementation.
+- Keep explanations proportional to complexity. No preamble, recaps or flattery.
+- Subagent prompts give paths, never pasted file contents, and end with "Final response under 2000 characters."
 ```
 
 **Read deny rules** (add if missing, merge into `permissions.deny` in settings.json). Claude Code has no `.claudeignore` file; deny rules are how to keep Claude out of junk folders:

@@ -31,6 +31,8 @@ Create or overwrite `<target_project>/docs/SESSION_HANDOFF.md`:
 ```markdown
 # Session Handoff - [DATE]
 
+Next session: treat this note as a claim, not proof. Before acting on it, check reality: `git status`, run the tests, read the files named below.
+
 ## What We Were Doing
 [1-2 sentence summary of the task/goal]
 
@@ -41,7 +43,10 @@ Create or overwrite `<target_project>/docs/SESSION_HANDOFF.md`:
 [Exact state - what is working, what is broken, what is in progress. Include a table if helpful.]
 
 ## The Open Bug / Blocker (if any)
-[If the session ended mid-debug, describe the bug, what was tried, and the leading hypothesis for the fix.]
+[If the session ended mid-debug, describe the bug and the leading hypothesis for the fix.]
+
+## Dead Ends
+- [One line per failed attempt: "tried X, it failed because Y". No transcripts or logs.]
 
 ## Next Steps (in order)
 1. [First thing to do in the next session]

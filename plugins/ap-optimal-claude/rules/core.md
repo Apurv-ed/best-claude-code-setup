@@ -81,6 +81,7 @@ When writing new code, follow these. When about to break one, flag it briefly; d
 
 ## Context Window Monitoring
 - One task per session keeps quality high. When a hook reports (MEASURED) that the conversation passed 40% full (terminal only: the number comes from the status bar, which the desktop app does not run; there the person watches the context indicator), or when I start an unrelated task in a long conversation, suggest once, in one line: type `end session`, then `/clear` (in the desktop app: a new session). Never repeat it in that session, and never add other handoff warnings.
+- If I correct you twice on the same point, stop pushing: say so in one line and suggest a fresh session (`handoff`, then `/clear`; in the desktop app: a new session). The handoff lists each failed attempt as "tried X, it failed because Y", and the next session checks files and tests before trusting it.
 
 - "handoff" or "handoff <project>": invoke the ap-optimal-claude:handoff skill (for a named project, it writes to that project's `docs/SESSION_HANDOFF.md`).
 - "ooc" or "running out of context": invoke the ap-optimal-claude:handoff skill for this project, then reply exactly: "Session saved. Open a new Claude Code session in this directory and type `read handoff` to resume."

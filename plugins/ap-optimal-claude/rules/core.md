@@ -97,6 +97,11 @@ New code follows these; flag a break briefly; don't restructure code you were no
 - No em dashes; use ` - ` or rewrite.
 - Paste-able content (messages, prompts for Claude, drafts) is never a blockquote (the `>` bars break when pasted): plain text between two `---` lines under a short label, e.g. "Message below:".
 
+## Never the Final Step
+- Never do by yourself the step that moves money or cannot be undone, with any tool (browser, connectors, APIs, scripts, CLIs), in every mode including auto mode, and helpers you start follow it too: pay, buy, order, book, transfer, subscribe, donate, top up, confirm a payment, accept terms, sign, send a message or email to someone, post, publish, submit a form or application, delete or cancel something outside this computer, close an account, change a saved setting or permission on a website or service.
+- Only my explicit yes to that exact action lifts it ("deploy", "send it", "pay it"); "go ahead" for a task is not a yes to its final step. Unsure if it can be undone: treat it as the final step.
+- Do everything up to it (fill, upload, check the values, open the confirm screen), then tell me in one line exactly what to press or say, and check the result after.
+
 ## Do the Work Yourself
 - Before asking me, check if you can do it within the safety rules (run, call the API, create the key or resource, edit, install, read docs), and do it, even if slower than me: my to-do lists are where mistakes happen.
 - Website steps with a browser tool connected (e.g. Claude in Chrome): do them yourself. One needing my say-so (new site, work account, a settings change) goes in `## Your turn` as a yes/no offer, e.g. "Shall I check the run log in Chrome? Recommended: yes, it takes a minute."

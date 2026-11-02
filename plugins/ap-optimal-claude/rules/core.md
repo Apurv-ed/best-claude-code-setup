@@ -116,7 +116,8 @@ New code follows these; flag a break briefly; don't restructure code you were no
 
 ## Long-Running Processes
 - Probe first: before a long job (API scan, backtest, remote script, pipeline), run a tiny version (1 record, 2-3 rows) and confirm the output looks right.
-- Then log the full run (`cmd > output.log 2>&1 &`), check within 60s, then every ~5 minutes until done. Never run a long job silently.
+- Then start the full run with `run_in_background`, output to a log (you are told when it ends); check it within 60s, then every ~5 minutes until done. Never run a long job silently.
+- Waiting: never `sleep N; tail` (blocked). Wait for one thing: Bash `run_in_background` with `until <check>; do sleep 1; done` (one notification). Every occurrence of something: Monitor, loaded first (ToolSearch `select:Monitor`), with `description` and `timeout_ms`.
 
 ## Superpowers
 - Use superpowers skills wherever they apply, even when it seems simple. Execute plans with `superpowers:subagent-driven-development`; never ask which approach.

@@ -5,12 +5,12 @@ Claude Code caps a hook's additionalContext at 10,000 characters; anything longe
 replaced by a file path and a 2,000-character preview, so an oversized STATUS.md used
 to hide the project's goal and state. Messages other sessions left (docs/SESSION_MESSAGES.md,
 small) come first, then STATUS.md gets the budget.
-Usage: python3 session_context.py <project_root> [budget]  (budget: characters, default 8500)
+Usage: python3 session_context.py <project_root> [budget]  (budget: characters, default 8800)
 """
 import datetime, pathlib, subprocess, sys
 
 STATUS_LIMIT_BYTES = 7 * 1024
-PIECES = (("STATUS.md", 7000), ("docs/SESSION_HANDOFF.md", 4000), ("context/state.md", 3000), ("context/schema.md", 3000))
+PIECES = (("STATUS.md", STATUS_LIMIT_BYTES + 100), ("docs/SESSION_HANDOFF.md", 4000), ("context/state.md", 3000), ("context/schema.md", 3000))
 MIN_PIECE = 500
 # Notes other Claude sessions left for this project (team rule "Project Boundaries"): shown first,
 # never skipped as stale, since a commit here says nothing about whether they were read.
@@ -79,7 +79,28 @@ def _due(root, left, today):
         return ""
 
 
-def build_context(root, budget=8500, today=None):
+def _next(root, left):
+    """The undated-priority block, or "" when there are no tags or anything goes wrong."""
+    try:
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        from due_markers import find_tagged, format_next
+        return format_next(find_tagged(root), limit=min(1100, left))
+    except Exception:
+        return ""
+
+
+def _status_reserve(root):
+    """Characters STATUS.md needs to be shown whole (header included), at most its 7 KB limit."""
+    path = root / "STATUS.md"
+    if not path.is_file():
+        return 0
+    return min(len("=== STATUS.md ===\n") + len(path.read_text(encoding="utf-8", errors="ignore")), STATUS_LIMIT_BYTES + 100)
+
+
+def build_context(root, budget=8800, today=None):
+    # Budget 8800: Claude Code caps a hook's additionalContext at 10,000 characters and the hook adds
+    # its own notes after this block (online-copy note ~500, setup-update ~260, startup message,
+    # sync/update notes), so 1,200 stay free. STATUS.md (up to 7 KB) is reserved before [NEXT].
     root = pathlib.Path(root)
     parts, left = [], budget
     messages = _messages(root, left)
@@ -90,6 +111,10 @@ def build_context(root, budget=8500, today=None):
     if due and len(due) + 1 <= left:
         parts.append(due)
         left -= len(due) + 1
+    nxt = _next(root, left - _status_reserve(root))
+    if nxt and len(nxt) + 1 <= left:
+        parts.append(nxt)
+        left -= len(nxt) + 1
     for rel, limit in PIECES:
         path = root / rel
         if not path.is_file():
@@ -126,5 +151,5 @@ def build_context(root, budget=8500, today=None):
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
-    budget = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 8500
+    budget = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 8800
     print(build_context(sys.argv[1] if len(sys.argv) > 1 else ".", budget))

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Find "Due YYYY-MM-DD" markers (and JSON due items) in a project and format a short due/overdue block.
 
-CLI: due_markers.py <root> [--today YYYY-MM-DD] [--count | --has-markers]
+CLI: due_markers.py <root> [--today YYYY-MM-DD] [--count | --has-markers | --next]
      due_markers.py --intro <data_dir> <project_root>
 Stdlib only. Never raises out of the CLI.
 """
 import datetime, hashlib, json, pathlib, re, subprocess, sys
 
 MARKER = re.compile(r"\bDue (\d{4}-\d{2}-\d{2}|\d{4}-\d{1,2}-\d{1,2})\b")
+TAG = re.compile(r"\[\s*(high|medium|low)\s*[\u00b7/,|]\s*(claude|you|owner)\s*[\u00b7/,|]\s*(quick|big)\s*\]", re.I)
+CHECKED = re.compile(r"^\s*[-*]\s*\[[xX]\]")
 BUMP = re.compile(r"\(bumped (\d+)\)")
 SKIP_DIRS = ("docs/research/", "docs/decisions/", "docs/transcriptions/", "docs/superpowers/", "docs/SESSION_HANDOFF.md")
 SKIP_SEGMENTS = {"node_modules", ".venv", "venv", "dist", "build"}
@@ -131,6 +133,57 @@ def find_items(root):
     return md + js
 
 
+def _tag_item(rel, line, key, text, m):
+    sev = ("high", "medium", "low").index(m.group(1).lower())
+    who = "claude" if m.group(2).lower() == "claude" else "you"
+    return {"file": rel, "line": line, "text": text, "sev": sev, "who": who,
+            "size": 0 if m.group(3).lower() == "quick" else 1, "key": key}
+
+
+def _md_tagged(rel, text):
+    items, fence = [], False
+    for no, line in enumerate(text.splitlines(), 1):
+        if line.lstrip().startswith("```"):
+            fence = not fence
+            continue
+        if fence or "~~" in line or CHECKED.match(line) or MARKER.search(line):
+            continue
+        m = TAG.search(re.sub(r"`[^`]*`", "", line))
+        if m:
+            items.append(_tag_item(rel, no, "%s:%d" % (rel, no), line.strip(), m))
+    return items
+
+
+def _json_tagged(rel, text):
+    data = json.loads(text)
+    rows = data.get("items") if isinstance(data, dict) else data
+    out = []
+    if not isinstance(rows, list):
+        return out
+    for r in rows:
+        if not isinstance(r, dict) or not isinstance(r.get("priority"), str) or r.get("due") or _is_done(r):
+            continue
+        m = TAG.fullmatch("[" + r["priority"].strip() + "]")
+        if not m:
+            continue
+        title = str(r.get("title") or r.get("text") or "").strip()
+        rid = str(r["id"]) if r.get("id") else ""
+        out.append(_tag_item(rel, 0, rid or "%s:%s" % (rel, title), ("%s %s" % (rid, title)).strip(), m))
+    return out
+
+
+def find_tagged(root):
+    root = pathlib.Path(root)
+    out = []
+    for rel in _files(root):
+        try:
+            text = _read(root / rel)
+            out += _json_tagged(rel, text) if rel.endswith(".json") else _md_tagged(rel, text)
+        except Exception:
+            continue
+    return sorted(out, key=lambda i: (i["sev"], i["size"], _rank(i["file"]), i["line"]))
+
+
 def _loc(it):
     return it["file"] if not it["line"] else "%s:%d" % (it["file"], it["line"])
 
@@ -173,6 +226,38 @@ def format_due(items, today, max_items=10, per_item=150, limit=1500):
     return "\n".join(out)
 
 
+NEXT_HEAD = "[NEXT] Undated open items by priority (tags [severity \u00b7 who \u00b7 size])."
+NEXT_CLAUDE = "Next for Claude (when there is no other task, do the top one unless you state a reason to wait):"
+NEXT_YOU = "Needs you (ask the user about these together, in one batched question):"
+
+
+def _cut(s, n):
+    return s if len(s) <= n else s[:max(n - 3, 0)] + "..."
+
+
+def count_needs_you(root):
+    return sum(1 for i in find_tagged(root) if i["who"] == "you")
+
+
+def format_next(tagged, top=3, per_item=130, limit=1100):
+    lists = {w: [_cut("- %s %s" % (_loc(i), re.sub(r"^[-*]\s+(\[[ ]\]\s+)?", "", i["text"].strip())), per_item) for i in tagged if i["who"] == w][:top] for w in ("claude", "you")}
+
+    def render():
+        out = [NEXT_HEAD]
+        for w, head in (("claude", NEXT_CLAUDE), ("you", NEXT_YOU)):
+            if lists[w]:
+                out += [head] + lists[w]
+        return "\n".join(out)
+
+    while len(render()) > limit and (lists["claude"] or lists["you"]):
+        # drop from the bottom of the longer list (on a tie, from "Needs you"); keep one each while possible
+        w = "claude" if len(lists["claude"]) > len(lists["you"]) else "you"
+        if not lists[w]:
+            w = "claude"
+        lists[w].pop()
+    return render() if (lists["claude"] or lists["you"]) else ""
+
+
 def _intro(data_dir, root):
     root = pathlib.Path(root).resolve()
     h = hashlib.sha1(str(root).encode("utf-8")).hexdigest()[:16]
@@ -185,6 +270,8 @@ def _intro(data_dir, root):
 
 
 def main(argv):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
     try:
         if argv and argv[0] == "--intro":
             out = _intro(argv[1], argv[2])
@@ -202,6 +289,11 @@ def main(argv):
             return 0 if find_items(root) else 1
         if "--count" in argv:
             print(count_due(root, today))
+            return 0
+        if "--next" in argv:
+            out = format_next(find_tagged(root))
+            if out:
+                print(out)
             return 0
         out = format_due(find_items(root), today)
         if out:

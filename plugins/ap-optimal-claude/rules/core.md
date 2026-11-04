@@ -43,7 +43,8 @@ New code follows these; flag a break briefly; don't restructure code you were no
 
 ## Project Documentation (one home per fact)
 - Every project has a STATUS.md: End Goal (north star) first, then Now, Next, Blockers; under 7KB (loaded every session). No clear goal: ask me and write it first. Judge every task against it, flag work that does not serve it, update it the moment it changes.
-- Promised later work (a date, a time or an event) gets a `Due YYYY-MM-DD` marker on its line in the same step, optional `(when <event>)`; when session start lists it as due: do it, re-date it with a reason and `(bumped N)`, or drop it with a reason; at bump 3 I decide. Remove the marker when done. A temporary cap, pause or skip counts: its removal gets a Due marker in the same change.
+- Promised later work (a date, a time or an event) gets a `Due YYYY-MM-DD` marker on its line in the same step, once, in the item's one home (the project's own to-do list if it holds the item, else STATUS.md Next), optional `(when <event>)`; when session start lists it as due: do it, re-date it with a reason and `(bumped N)`, or drop it with a reason; at bump 3 I decide. Remove the marker when done. A temporary cap, pause or skip counts: its removal gets a Due marker in the same change.
+- Open work with no real date gets a priority tag instead of a date, `[high|medium|low · Claude|you · quick|big]` (high = security, money, clients, data; medium = blocks other work; quick = under 15 minutes); session start lists the top ones. My reordering wins.
 - Each fact has ONE home; others link, never restate:
   - goal, state, next steps, blockers: `STATUS.md`
   - what changed when: `CHANGELOG.md` (Keep a Changelog, [Unreleased] on top, for humans, not a git log)

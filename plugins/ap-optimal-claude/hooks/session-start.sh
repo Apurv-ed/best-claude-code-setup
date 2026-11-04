@@ -71,7 +71,7 @@ fi
 # Measured first, so the project context shrinks by the note's length and stays under the cap.
 PATHS_NOTE=""
 [ -f "$CWD/.claude/settings.json" ] && PATHS_NOTE=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/machine_paths.py" --session "$CWD" 2>/dev/null)
-BUDGET=$((8500 - ${#PATHS_NOTE})); [ "$BUDGET" -lt 0 ] && BUDGET=0
+BUDGET=$((8800 - ${#PATHS_NOTE})); [ "$BUDGET" -lt 0 ] && BUDGET=0
 PROJECT_CONTEXT=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/session_context.py" "$CWD" "$BUDGET" 2>/dev/null)
 [ -n "$PROJECT_CONTEXT" ] && CONTEXT="$CONTEXT"$'\n'"$PROJECT_CONTEXT"
 [ -n "$PATHS_NOTE" ] && CONTEXT="$CONTEXT"$'\n'"$PATHS_NOTE"

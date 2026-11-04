@@ -51,7 +51,7 @@ Next session: treat this note as a claim, not proof. Before acting on it, check 
 ## Next Steps (in order)
 1. [First thing to do in the next session]
 2. [Second thing]
-A promised date or event gets its Due YYYY-MM-DD marker on the STATUS.md Next line, not here (see core rules).
+A promised date or event gets its Due YYYY-MM-DD marker on the item's line in its one home (the project's own to-do list if it holds the item, else STATUS.md Next), not here; session start ignores this note. Undated follow-ups get a priority tag there too.
 
 ## Key Files Changed
 - path/to/file - what changed and why

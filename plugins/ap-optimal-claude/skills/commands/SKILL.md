@@ -16,6 +16,7 @@ Show the user the tables below as they are. Keep it plain: no extra jargon, no l
 | `end session` | Wraps up: tidies all the notes, saves a handoff note if work is unfinished, then saves everything to GitHub. |
 | `deploy` | Runs update github, then publishes the project if it has a publish step. |
 | `handoff` | Writes a note so a fresh session continues where you left off. When /context shows about 40% full, type end session, then /clear (in the desktop app: + New) instead; use this only for work you cannot finish. |
+| `sort deadlines` | Marks this project's real open deadlines with Due markers, so session start can remind you when they are due. |
 | `ooc` | Means "running out of context". Saves a handoff note right away. |
 | `read handoff` | Continues from the last handoff note. Type it at the start of a new session. |
 | `grill me` | Questions your plan until every decision is clear. |

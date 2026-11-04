@@ -113,10 +113,20 @@ fi
 LESSONS_NOTE=""
 [ -f "$CWD/tasks/lessons.md" ] && LESSONS_NOTE="This project still has tasks/lessons.md (old-style lessons). Read it silently now and apply its rules for this session."
 
+# One-time note per project introducing Due markers (due_markers.py --intro writes its own marker file)
+DUE_INTRO_NOTE=""
+if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ]; then
+    DUE_TOP=$(git rev-parse --show-toplevel 2>/dev/null)
+    if [ -n "$DUE_TOP" ] && [ -f "$DUE_TOP/STATUS.md" ]; then
+        DUE_INTRO_NOTE=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/due_markers.py" --intro "${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/ap-optimal-claude}" "$DUE_TOP" 2>/dev/null)
+    fi
+fi
+
 # Append instruction Claude will actually see (additionalContext, not systemMessage)
 STARTUP_MSG=$'\n[SESSION START]'
 [ -n "$NO_GIT_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $NO_GIT_NOTE"
 [ -n "$LESSONS_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $LESSONS_NOTE"
+[ -n "$DUE_INTRO_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $DUE_INTRO_NOTE"
 CONTEXT="$CONTEXT$STARTUP_MSG"
 
 printf '%s' "$CONTEXT" | "$PYTHON" -c "

@@ -7,7 +7,7 @@ to hide the project's goal and state. Messages other sessions left (docs/SESSION
 small) come first, then STATUS.md gets the budget.
 Usage: python3 session_context.py <project_root> [budget]  (budget: characters, default 8500)
 """
-import pathlib, subprocess, sys
+import datetime, pathlib, subprocess, sys
 
 STATUS_LIMIT_BYTES = 7 * 1024
 PIECES = (("STATUS.md", 7000), ("docs/SESSION_HANDOFF.md", 4000), ("context/state.md", 3000), ("context/schema.md", 3000))
@@ -69,13 +69,27 @@ def _handoff_is_stale(root, path):
     return path.stat().st_mtime < head and _git_time(root, "--", "docs/SESSION_HANDOFF.md") < head
 
 
-def build_context(root, budget=8500):
+def _due(root, left, today):
+    """The Due-markers block, or "" when nothing is due or anything at all goes wrong."""
+    try:
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        from due_markers import find_items, format_due
+        return format_due(find_items(root), today, limit=min(1500, left))
+    except Exception:
+        return ""
+
+
+def build_context(root, budget=8500, today=None):
     root = pathlib.Path(root)
     parts, left = [], budget
     messages = _messages(root, left)
     if messages:
         parts.append(messages)
         left -= len(messages) + 1
+    due = _due(root, left, today or datetime.date.today())
+    if due and len(due) + 1 <= left:
+        parts.append(due)
+        left -= len(due) + 1
     for rel, limit in PIECES:
         path = root / rel
         if not path.is_file():

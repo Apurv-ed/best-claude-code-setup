@@ -11,7 +11,7 @@ Principle (Google docguide, Write the Docs): a small set of fresh, accurate docs
 
 | Fact | Home | Notes |
 |---|---|---|
-| End goal, current state, next steps, blockers | `STATUS.md` | End Goal first. Sections: End Goal, Now, Next, Later (optional), Blockers. Under 7KB (loaded every session). No history here. |
+| End goal, current state, next steps, blockers | `STATUS.md` | End Goal first. Sections: End Goal, Now, Next, Later (optional), Blockers. Under 7KB (loaded every session). No history here. A promised date or event goes on its line as `Due YYYY-MM-DD` (optional `(when <event>)`). |
 | What changed and when | `CHANGELOG.md` | Keep a Changelog 1.1.0: `## [Unreleased]` on top, then dated sections; entries grouped under `### Added / Changed / Deprecated / Removed / Fixed / Security`; written by hand for humans. |
 | Why a decision was made | `docs/decisions/NNNN-title.md` | One file per decision in MADR 4 format (template below). A reversed decision gets `status: "superseded by ADR-NNNN"`; never rewritten. `docs/decisions/README.md` lists them. |
 | How to set up and use | `README.md` | Standard Readme order: title, short description, Install, Usage, then links to the other docs; Contributing and License when public. |

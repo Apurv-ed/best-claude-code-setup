@@ -51,6 +51,7 @@ Next session: treat this note as a claim, not proof. Before acting on it, check 
 ## Next Steps (in order)
 1. [First thing to do in the next session]
 2. [Second thing]
+A promised date or event gets its Due YYYY-MM-DD marker on the STATUS.md Next line, not here (see core rules).
 
 ## Key Files Changed
 - path/to/file - what changed and why

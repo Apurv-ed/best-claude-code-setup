@@ -48,6 +48,9 @@ Next session: treat this note as a claim, not proof. Before acting on it, check 
 ## Dead Ends
 - [One line per failed attempt: "tried X, it failed because Y". No transcripts or logs.]
 
+## In-flight work
+[Everything still running: background helpers (agent ids), background tasks and shells, burst or other remote jobs (Modal call ids, `fc-...`). For each: id, log or output path, and what to do with the result when it finishes. Write "none" if nothing is running.]
+
 ## Next Steps (in order)
 1. [First thing to do in the next session]
 2. [Second thing]
@@ -66,9 +69,18 @@ A promised date or event gets its Due YYYY-MM-DD marker on the item's line in it
 [Anything that would trip up a fresh session - known bugs, workarounds, etc.]
 ```
 
+## Check what is still running
+
+Before writing, list everything still running:
+- Helpers: Agent calls in this conversation with no completion notice yet; `ListAgents` shows the ones you can still message.
+- Background shells: `run_in_background` commands with no exit notice yet (their output file path is in the call's result).
+- Remote jobs: the job's own status command (for example `burst list` for Modal runs, with their `fc-...` ids).
+
+Record each in In-flight work with its id, log or output path, and what to do with the result. If anything is running, say so in the final message and recommend waiting for it before `/clear`: a `/clear` loses its notifications (the log files stay, so the note lets the next session collect them).
+
 ## After writing
 
-Say: "Handoff written to `docs/SESSION_HANDOFF.md` in `<project>`. Now: 1. Type `/exit`  2. Run `claude -c` to resume  3. Say *read the handoff* and I will pick up exactly where we left off."
+Say: "Handoff written to `docs/SESSION_HANDOFF.md` in `<project>`. Now: 1. Type `/clear` (app: a new session)  2. Type `read handoff` and I will pick up where we left off." Do not suggest `--continue`: it reloads the whole old conversation, which is what the handoff avoids.
 
 ## Note on cross-session handoffs
 

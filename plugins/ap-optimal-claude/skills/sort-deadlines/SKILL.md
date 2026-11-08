@@ -5,6 +5,12 @@ description: Use when the user says "sort deadlines" or a session-start note off
 
 # Sort Deadlines
 
+Rules that apply any time you add or handle a marker (not only when sorting):
+- Promised later work (a date, a time or an event) gets a `Due YYYY-MM-DD` marker on its line in the same step, once, in the item's one home (the project's own to-do list if it holds the item, else STATUS.md Next), optional `(when <event>)`.
+- When session start lists an item as due: do it, re-date it with a reason and `(bumped N)`, or drop it with a reason. At bump 3 the owner decides. Remove the marker when the item is done.
+- A temporary cap, pause or skip counts as promised work: its removal gets a Due marker in the same change.
+- Open work with no real date gets a priority tag instead of a date (step 5). Session start lists the top ones. The owner's reordering wins.
+
 1. Read STATUS.md (Next), the latest handoff and the project's own to-do lists.
 2. For each line with a date, decide: real open deadline, or history (something already done or past). Leave history alone.
 3. Add `Due YYYY-MM-DD` to the line of each real open deadline or "ideal by" date only. For an item that waits on an event, add `(when <event>)` and a check-again date. An ASAP item with no real date gets a priority tag (step 5), not a date.

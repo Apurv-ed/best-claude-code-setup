@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Context meter: one measured note per session when the context window passes 40%.
+"""Context meter: one measured note per session when the context passes 40% of the window OR 250,000 tokens, whichever comes first.
 
 No hook input carries the context size; only the status line gets it from Claude Code
 (context_window.used_percentage and context_window_size, code.claude.com/docs/en/statusline).
@@ -8,17 +8,20 @@ So this script has two modes:
   statusline <command>  Wraps the real status bar: saves the window numbers for this session,
                         then runs <command> with the same input and shows its output. Always
                         exits 0 so the status bar never breaks.
-  hook                  UserPromptSubmit: the first time the saved number is 40% or more,
-                        shows the user one line and tells Claude to suggest "end session"
-                        then /clear once. Silent on any problem.
+  hook                  UserPromptSubmit: the first time the saved number is 40% or more of the
+                        window, or the used tokens (percentage x window size) reach 250,000,
+                        shows the user one line and tells Claude to suggest "handoff" (work still
+                        open) or "end session" (work done), then /clear, once. Silent on any problem.
 
 Data: <claude dir>/context-meter/<session>.json (a few bytes each, older than 7 days removed).
 /clear starts a new session id, so the note can fire again in the fresh conversation.
 """
-import json, os, re, subprocess, sys, time
+import json
+import math, os, re, subprocess, sys, time
 from pathlib import Path
 
 THRESHOLD = 40
+TOKEN_LIMIT = 250_000  # long conversations cost the most: nudge by size too, so big windows are not nudged late
 KEEP_DAYS = 7
 
 
@@ -73,19 +76,25 @@ def hook() -> int:
             return 0
         d = json.loads((folder / f"{sid}.json").read_text())
         pct = d["used_percentage"]
-        if pct < THRESHOLD:
+        size = d.get("context_window_size")
+        if not isinstance(pct, (int, float)) or not math.isfinite(pct) or not 0 <= pct <= 100:
+            return 0
+        used = pct * size / 100 if isinstance(size, (int, float)) and math.isfinite(size) and 0 < size <= 10_000_000 else 0
+        if pct < THRESHOLD and used < TOKEN_LIMIT:
             return 0
         marker.write_text("1")
-        size = d.get("context_window_size")
+        tok = f" ({used / 1000:.0f}K tokens)" if used else ""
         window = f"{size // 1000}K-token window" if isinstance(size, int) else "context window"
         print(json.dumps({
-            "systemMessage": f"This conversation is {pct:.0f}% full. For the best quality, type end session, then /clear to start fresh.",
+            "systemMessage": f"This conversation is {pct:.0f}% full{tok}. Long conversations cost the most, so a fresh start now saves plan usage and keeps quality: type handoff if work is still open, or end session if it is done, then /clear.",
             "hookSpecificOutput": {
                 "hookEventName": "UserPromptSubmit",
                 "additionalContext": (
-                    f"MEASURED: this conversation fills {pct:.0f}% of its {window} (reported by Claude Code). "
-                    "Answer the user's message first, then add one line suggesting they type 'end session' "
-                    "and then /clear for the best quality. Say it once; do not repeat it later in this session."),
+                    f"MEASURED: this conversation fills {pct:.0f}% of its {window}{tok} (reported by Claude Code). "
+                    "Answer the user's message first, then add one line: if work is still open, suggest they type 'handoff', "
+                    "then /clear, then 'read handoff' in the fresh session; if the work is done, suggest 'end session' then /clear. "
+                    "Say the suggestion comes earlier than the window limit because long conversations cost the most. "
+                    "Say it once; do not repeat it later in this session."),
             },
         }))
     except Exception:

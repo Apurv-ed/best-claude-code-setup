@@ -12,7 +12,7 @@ Steps in order:
 1. List what this session changed (`git status`, `git diff --stat HEAD`, the conversation).
 2. Do the quick doc update from the project-docs skill: put each fact this session changed in its one home (STATUS.md, CHANGELOG.md under [Unreleased], a decision file for real decisions (in a project that still has the single `docs/decisions.md`, append to it in its existing style and never start `docs/decisions/` beside it), README.md / CLAUDE.md when setup, usage or conventions changed). The full audit runs only when the user says "update docs".
 3. Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doc_check.py" --changed` from the project root and fix every ERROR it reports.
-4. Commit with a thorough message (follow the Commit Messages rule in your rules file), then `git push origin HEAD`.
+4. Before committing run `git status` and `git diff --staged`, and update every stale .md file in the project. Commit message: `type(scope): summary` (feat, fix, refactor, docs, style, test, chore, perf, ci, build), then 2-3+ sentences on WHY, then every affected file under "Changes:". Never "fix stuff", "updates" or a one-line message for a multi-file change. Then `git push origin HEAD`.
 5. If work is unfinished, invoke the handoff skill; otherwise STATUS.md already is the handoff.
 
 ## When Things Go Wrong

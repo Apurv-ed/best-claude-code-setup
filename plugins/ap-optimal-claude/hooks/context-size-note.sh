@@ -1,6 +1,6 @@
 #!/bin/bash
 # UserPromptSubmit hook: once per session, a measured note when the context window passes
-# 40% (the number comes from Claude Code via the status line; see scripts/context_meter.py).
+# 40% or 250,000 tokens, whichever comes first (the numbers come from Claude Code via the status line; see scripts/context_meter.py, ADR-0103).
 # States a measurement, fires at most once per session, fails silent.
 # Canary: python3 scripts/test_context_meter.py --live
 . "$(dirname "$0")/lib-python.sh"

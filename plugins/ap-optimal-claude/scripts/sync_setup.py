@@ -437,7 +437,7 @@ def sync_statusline(root: Path, claude_dir: Path, notes: list, data_dir: Path = 
     tmp.write_text(json.dumps(s, indent=2) + "\n", encoding="utf-8")
     tmp.replace(path)
     if old == DEFAULT_STATUSLINE:
-        notes.append("status bar now also lets Claude suggest a fresh start once a conversation passes 40% full")
+        notes.append("status bar now also lets Claude suggest a fresh start once a conversation passes 40% full or 250K tokens")
     if bar and kind == "npx":
         notes.append("status bar now runs an installed ccstatusline instead of npx (about 5x less CPU per refresh)")
 

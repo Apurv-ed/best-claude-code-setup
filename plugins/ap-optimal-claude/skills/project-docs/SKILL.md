@@ -49,6 +49,10 @@ Chosen option: "Option A", because <reason>.
 ```
 
 ## Rules
+- Other docs only with real content (e.g. `METRICS.md`), no placeholders; outdated docs are worse than none.
+- Decisions: one MADR file each; a reversed one is marked superseded, not rewritten; a project with a single `docs/decisions.md` keeps appending to it and never starts `docs/decisions/` beside it.
+- `docs/SESSION_HANDOFF.md` only for unfinished work; STATUS.md holds everything else.
+- Due markers and priority tags: see the sort-deadlines skill. Legacy files (ROADMAP.md, context/state.md, context/schema.md, context/insights.md, EXPERIMENTS.md): never add to them; propose folding them in (section below).
 - Update the home of a fact in the same change as the work. When a fact changes, fix it in its home and delete copies elsewhere.
 - Never put the same fact in two files. If a second file needs it, link: `see STATUS.md#next`.
 - Before committing doc changes, run the doc check: `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doc_check.py"` from the project root (add `--changed` to block only on files this change touches), and fix what it reports.

@@ -28,7 +28,7 @@ if [ -n "$PROJECTS_FOLDER" ] && [ -z "$HOLDS_PROJECTS" ] && { [[ "$CWD" == "$PRO
         || { [ -n "$PROJECTS_REAL" ] && { [[ "$CWD" == "$PROJECTS_REAL"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_REAL"/* ]]; }; }; } \
         && ! git rev-parse --git-dir > /dev/null 2>&1; then
     if git init -q > /dev/null 2>&1; then
-        GIT_INIT_NOTE="[GIT STARTED] This folder ($(basename "$CWD")) had no git, so git was started here (local only, no GitHub). Tell the user in one plain line that a first commit is worth making."
+        GIT_INIT_NOTE="[GIT STARTED] $(basename "$CWD") had no git; started it here (local only). Tell the user in one line that a first commit is worth making."
     fi
 fi
 
@@ -39,7 +39,7 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ] && ! git rev-parse 
     MARK="$MARK_DIR/$(printf '%s' "$CWD" | cksum | cut -d' ' -f1)"
     if [ -z "$(find "$MARK" -mtime -7 2>/dev/null)" ]; then
         mkdir -p "$MARK_DIR" 2>/dev/null && : > "$MARK" 2>/dev/null
-        NO_GIT_NOTE="[NO GIT] This folder ($(basename "$CWD")) has no git and no online copy. Offer in one plain line to start git and a private GitHub repo, and ask which GitHub account to use. Do nothing until the user says yes."
+        NO_GIT_NOTE="[NO GIT] $(basename "$CWD") has no git and no online copy. Offer in one line to start git and a private GitHub repo, asking which GitHub account. Do nothing until the user says yes."
     fi
 fi
 
@@ -55,7 +55,7 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$NO_GIT_NOTE" ] && git rev-parse --git
     if [ -z "$(find "$MARK" -mtime -7 2>/dev/null)" ]; then
         mkdir -p "$MARK_DIR" 2>/dev/null && : > "$MARK" 2>/dev/null
         NAME=$(basename "$TOP")
-        ONLINE_NOTE="[NO ONLINE COPY] This project ($NAME) exists only on this computer: git has no remote, so a lost or broken laptop loses it. Tell the user in one plain line and offer to create a private GitHub repo and push it, asking which GitHub account to use (from $TOP: gh repo create $NAME --private --source=. --push). If they say not now, drop it (this note comes back at most once a week); if they never want one for this project, run: git config ap.localOnly true"
+        ONLINE_NOTE="[NO ONLINE COPY] $NAME has no git remote, so it exists only on this computer. Tell the user in one line and offer a private GitHub repo, asking which account (from $TOP: gh repo create $NAME --private --source=. --push). Not now: drop it (returns weekly). Never wanted: git config ap.localOnly true"
     fi
 fi
 
@@ -92,9 +92,9 @@ SAFETY="${CLAUDE_PLUGIN_ROOT}/scripts/safety_guard.py"
 if [ ! -f "$CLAUDE_DIR/projects-folder.txt" ] && [ ! -e "$PLUGIN_DATA/projects-folder-asked" ] && [ -r "$SAFETY" ] \
         && mkdir -p "$PLUGIN_DATA" 2>/dev/null && : > "$PLUGIN_DATA/projects-folder-asked" 2>/dev/null; then
     CANDS=$("$PYTHON" "$SAFETY" --candidates 2>/dev/null | tr '\n' ';' | sed 's/;$//; s/;/; /g')
-    FOLDER_NOTE="[PROJECTS FOLDER] Ask the user once, in plain words, which folder to keep their projects in (Claude does not change files in the home folder, Documents, Downloads or Desktop themselves, only in a project folder). Recommend ~/Claude Projects"
+    FOLDER_NOTE="[PROJECTS FOLDER] Ask the user once which folder to keep projects in (Claude changes files only in a project folder, not in home, Documents, Downloads or Desktop). Recommend ~/Claude Projects"
     [ -n "$CANDS" ] && FOLDER_NOTE="$FOLDER_NOTE; folders that already exist and could be used instead: $CANDS"
-    FOLDER_NOTE="$FOLDER_NOTE. When they answer, run: \"$PYTHON\" \"$SAFETY\" --set-folder \"<their folder>\" and tell them to start Claude from a project folder inside it. Do not ask again."
+    FOLDER_NOTE="$FOLDER_NOTE. On their answer run: \"$PYTHON\" \"$SAFETY\" --set-folder \"<folder>\" and tell them to start Claude in a project folder inside it. Do not ask again."
 fi
 
 # Project context (STATUS.md first, then a fresh handoff, then legacy context/ files),
@@ -131,14 +131,14 @@ fi
 # also runs, so there is one implementation. Changes it makes take effect next session.
 SYNC_NOTES=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/sync_setup.py" 2>/dev/null)
 if [ -n "$SYNC_NOTES" ]; then
-    CONTEXT="$CONTEXT"$'\n'"[SETUP UPDATED BY THE TEAM PLUGIN] Mention these in one short line at the start of your response:"$'\n'"$SYNC_NOTES"
+    CONTEXT="$CONTEXT"$'\n'"[SETUP UPDATED] Mention in one short line at the start of your response:"$'\n'"$SYNC_NOTES"
 fi
 
 # Daily self-update (scripts/self_update.py): reports what the last background run did and,
 # at most once a day, starts the next one detached, so this never waits for the network.
 UPDATE_NOTES=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/self_update.py" check 2>/dev/null)
 if [ -n "$UPDATE_NOTES" ]; then
-    CONTEXT="$CONTEXT"$'\n'"[SETUP NOTE] Tell the user each of these in one plain line at the start of your response:"$'\n'"$UPDATE_NOTES"
+    CONTEXT="$CONTEXT"$'\n'"[SETUP NOTE] Tell the user each in one line at the start of your response:"$'\n'"$UPDATE_NOTES"
 fi
 
 # Legacy tasks/lessons.md (pre-migration, not yet ported to Auto Memory): tell Claude to use it

@@ -1,7 +1,7 @@
 ## Context Efficiency
 - Never echo files you read, narrate tool calls, or re-read a file already read. Grep for a section before reading a whole file.
 - Write for a non-technical reader: everyday words, short sentences, answer first, a few words for any technical term. No preamble, recaps or flattery; offer detail instead. Covers replies and what I send to people, not commits, code or prompts for Claude.
-- Subagent prompts give paths, never pasted file contents, and end with "Final response under 2000 characters."
+- Subagent prompts give paths, never pasted file contents, and end with "Final response under 2000 characters" and ask for done or not done, files changed, checks run, open doubts.
 
 ## Clarifying Questions
 - Ask only when readings lead to materially different work; otherwise state your reading in one line and go. Questions go at the very bottom, each with your recommendation and a one-line reason (when only I know: your guess and why).

@@ -12,6 +12,7 @@ Standard library only. Silent unless it decides something. Any problem means no 
 Other uses:  safety_guard.py --candidates          list existing project-folder candidates
              safety_guard.py --set-folder PATH     remember where projects are kept
 """
+import fnmatch
 import json
 import os
 import re
@@ -25,6 +26,9 @@ CANDIDATES = ["~/Claude Projects", "~/Projects", "~/projects", "~/Code", "~/code
 DEFAULT_FOLDER = "~/Claude Projects"
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit")
 NO_FILE = ("/dev/null", "/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/fd/1", "/dev/fd/2")
+NO_FILE_RE = re.compile(r"^/(dev/(null|zero|stdout|stderr|stdin|tty|fd/\d+)|proc/self/fd/\d+)$")
+MAX_OPEN_PARENS = 400   # more "(" than this, or nested deeper than MAX_NEST: not analysed (cannot be known, so allowed)
+MAX_NEST = 60
 SUB_HEREDOC = re.compile(r"""\$\([^\n]*?<<-?[ \t]*['"]?([\w.-]+)['"]?[^\n]*\n""")
 SEMI = "\x01;"  # an escaped semicolon (find -exec ... \;), kept apart from the shell's own ;
 SEPARATORS = set("();&|")
@@ -35,8 +39,11 @@ SPECIAL = "$`*?[{"
 SHELLS = ("bash", "sh", "zsh", "dash", "ksh")
 MAX_DEPTH = 5
 KEYWORDS = {"do", "then", "else", "elif", "if", "while", "until", "{", "}", "!"}
+WRAPPERS = {"sudo", "doas", "env", "nohup", "time", "exec", "command", "builtin", "nice", "timeout", "gtimeout", "stdbuf",
+            "caffeinate", "arch"}
 
-Op = namedtuple("Op", "name kind recursive targets unknown")  # kind: write | delete
+# kind: write | delete; patterns: lower-case absolute paths that still hold a glob (to match protected file names)
+Op = namedtuple("Op", "name kind recursive targets unknown patterns", defaults=((),))
 
 
 # ----------------------------------------------------------------------------- paths
@@ -136,10 +143,46 @@ def is_guarded(root):
 
 # ----------------------------------------------------------------------------- parsing
 
-def strip_noise(cmd):
+def reads_stdin_shell(words):
+    """True for a shell that runs what it is fed (bash, sudo bash -s, ...), not one given a script or -c text."""
+    out, skip = [], False
+    for x in words:
+        if skip:
+            skip = False
+        elif re.fullmatch(r"\d*(<<?<?-?|>>?|&>>?|>&|>\|)", x):
+            skip = True
+        elif not re.match(r"^\d*(<|>|&>)", x):
+            out.append(x)
+    while out and (ENV_RE.match(out[0]) or cmdname(out[0]) in WRAPPERS):
+        out = out[1:]
+        while out and out[0].startswith("-"):
+            out = out[1:]
+    if not out or cmdname(out[0]) not in SHELLS:
+        return False
+    rest = out[1:]
+    return all(a.startswith("-") for a in rest) and not any(
+        a.startswith("-") and not a.startswith("--") and "c" in a[1:] for a in rest)
+
+
+def heredoc_feeds_shell(cmd, i):
+    """Is the heredoc that starts at cmd[i] given to a shell (bash <<EOF) or to something piped into one?"""
+    ls = cmd.rfind("\n", 0, i) + 1
+    eol = cmd.find("\n", i)
+    line = cmd[ls:len(cmd) if eol < 0 else eol]
+    parts, pos, k = re.split(r"([;&|()]+)", line), i - ls, 0
+    for idx in range(0, len(parts), 2):
+        if pos < k + len(parts[idx]) or idx + 2 >= len(parts):
+            if reads_stdin_shell(parts[idx].split()):
+                return True
+            return idx + 2 < len(parts) and parts[idx + 1] in ("|", "|&") and reads_stdin_shell(parts[idx + 2].split())
+        k += len(parts[idx]) + len(parts[idx + 1])
+    return False
+
+
+def strip_noise(cmd, fed=None):
     """Quote-aware: drop comments (a # at the start of a word, to the end of the line) and
     heredoc bodies (the <<EOF line stays, so its redirect still counts, and so does what follows
-    the terminator)."""
+    the terminator). A body given to a shell is commands: it is added to `fed` to be analysed."""
     out, quote, i, n, pending = [], None, 0, len(cmd), []
     while i < n:
         c = cmd[i]
@@ -199,13 +242,14 @@ def strip_noise(cmd):
                     word.append(cmd[k])
                     k += 1
             if word:
-                pending.append("".join(word))
+                pending.append(("".join(word), fed is not None and heredoc_feeds_shell(cmd, i)))
             out.append(cmd[i:k])
             i = k - 1
         elif c == "\n" and pending:
             out.append("\n")
             j = i + 1
-            for delim in pending:
+            for delim, feeds in pending:
+                body = []
                 while j < n:
                     eol = cmd.find("\n", j)
                     eol = n if eol < 0 else eol
@@ -213,6 +257,9 @@ def strip_noise(cmd):
                     j = eol + 1
                     if line.strip() == delim:
                         break
+                    body.append(line)
+                if feeds and body:
+                    fed.append("\n".join(body))
             pending = []
             i = j - 1
         else:
@@ -222,7 +269,8 @@ def strip_noise(cmd):
 
 
 def substitutions(text):
-    """Inner text of every $( ... ) and `...` (also inside double quotes; not inside single quotes)."""
+    """Inner text of every $( ... ) and `...` (also inside double quotes; not inside single quotes).
+    One nested inside another is left out: analysing the outer one finds it (else deep nesting repeats work)."""
     found, quote, i, n = [], None, 0, len(text)
     while i < n:
         c = text[i]
@@ -239,13 +287,13 @@ def substitutions(text):
             while j < n and depth:
                 depth += {"(": 1, ")": -1}.get(text[j], 0)
                 j += 1
-            found.append(text[i + 2:j - 1] if depth == 0 else text[i + 2:])
+            found.append((i, j, text[i + 2:j - 1] if depth == 0 else text[i + 2:]))
         elif c == "`":
             j = text.find("`", i + 1)
-            found.append(text[i + 1:j if j >= 0 else n])
+            found.append((i, (j if j >= 0 else n) + 1, text[i + 1:j if j >= 0 else n]))
             i = j if j >= 0 else n
         i += 1
-    return found
+    return [t for a, b, t in found if not any(a2 < a and b <= b2 for a2, b2, _ in found)]
 
 
 def prepare(cmd):
@@ -289,7 +337,7 @@ def tokenize(cmd):
 
 
 def is_separator(tok):
-    return bool(tok) and tok not in REDIRECTS and set(tok) <= SEPARATORS
+    return bool(tok) and tok not in REDIRECTS and (set(tok) <= SEPARATORS or tok in ("<(", ">("))
 
 
 def split_simple(tokens):
@@ -303,6 +351,10 @@ def split_simple(tokens):
             cur.append(tok)
     if cur:
         yield cur
+
+
+def is_no_file(w):
+    return w in NO_FILE or bool(NO_FILE_RE.match(w.replace("//", "/")))
 
 
 def clean(w):
@@ -326,6 +378,8 @@ def resolve(word, cwd):
         w = w[1].upper() + ":/" + w[3:]  # Git Bash writes C:\\x as /c/x
     cut = min((w.find(ch) for ch in SPECIAL if ch in w), default=-1)
     if cut >= 0:
+        if re.search(r"(^|[\\/])\.\.([\\/]|$)", w[cut:]):
+            return None  # a .. after a variable or glob: the real place is not known
         if "/" not in w[:cut]:
             # A bare glob or $(...) acts on the current folder; a plain $VAR could be anywhere.
             plain_var = w[cut] == "$" and w[cut:] != "$" and not w[cut:].startswith("$(")  # a lone $ is a split $(
@@ -336,6 +390,23 @@ def resolve(word, cwd):
             return None
         w = os.path.join(cwd, w)
     return norm(w)
+
+
+def glob_pattern(word, cwd):
+    """Lower-case absolute path of a word that holds a glob (* ? [), glob kept; None for other words."""
+    w = expand_user(word.replace("${HOME}", home_dir()).replace("$HOME", home_dir()))
+    m = re.search(r"[*?\[]", w)
+    if not m or "$" in w[:m.start()] or "`" in w[:m.start()]:
+        return None
+    idx = w.rfind("/", 0, m.start())
+    prefix, rest = (w[:idx] or "/", w[idx:]) if idx >= 0 else (cwd, "/" + w)
+    if not prefix:
+        return None
+    if not os.path.isabs(prefix):
+        if not cwd:
+            return None
+        prefix = os.path.join(cwd, prefix)
+    return (norm(prefix).replace("\\", "/").rstrip("/") + rest).lower()
 
 
 def positional(args, takes_arg=()):
@@ -387,23 +458,83 @@ class Ctx:
 
 
 def add(ops, ctx, name, kind, words, recursive=False, unknown=False):
-    words = [w for w in words if w not in NO_FILE]
-    ops.append(Op(name, kind, recursive, [resolve(w, ctx.cwd) for w in words], unknown))
+    words = [w for w in words if not is_no_file(w)]
+    pats = [x for x in (glob_pattern(w, ctx.cwd) for w in words) if x]
+    ops.append(Op(name, kind, recursive, [resolve(w, ctx.cwd) for w in words], unknown, pats))
+
+
+def too_complex(cmd):
+    """Thousands of open parentheses or very deep nesting cannot be followed; the command is then not analysed."""
+    if len(cmd) > 200000:
+        return True
+    depth = total = 0
+    for c in cmd:
+        if c == "(":
+            depth += 1
+            total += 1
+            if depth > MAX_NEST or total > MAX_OPEN_PARENS:
+                return True
+        elif c == ")" and depth:
+            depth -= 1
+    return False
+
+
+def literal_output(words):
+    """The text an echo or printf command writes, when it is plain words; else None."""
+    name = cmdname(words[0]) if words else ""
+    args = [clean(a) for a in words[1:]]
+    if name == "echo":
+        while args and re.fullmatch(r"-[neE]+", args[0]):
+            args = args[1:]
+        text = " ".join(args)
+    elif name == "printf" and args:
+        text = args[0] if "%" not in args[0] else "\n".join(args[1:])
+    else:
+        return None
+    return text.replace("\\n", "\n")
+
+
+def fed_texts(words, sep, prev):
+    """Text given to a shell by a here-string or by a pipe from echo/printf: it is commands."""
+    if not reads_stdin_shell(words):
+        return []
+    out = [clean(words[i + 1]) for i, w in enumerate(words[:-1]) if w == "<<<"]
+    if sep in ("|", "|&") and prev:
+        text = literal_output(prev)
+        if text:
+            out.append(text)
+    return out
 
 
 def analyze(cmd, ctx, depth=0):
     ops = []
-    if depth > MAX_DEPTH:
+    if depth > MAX_DEPTH or (depth == 0 and too_complex(cmd)):
         return ops
-    cmd = strip_noise(cmd)
-    for inner in substitutions(cmd):
+    fed = []
+    cmd = strip_noise(cmd, fed)
+    for inner in substitutions(cmd) + fed:
         ops.extend(analyze(inner, Ctx(ctx.cwd), depth + 1))
     try:
         tokens = tokenize(cmd)
     except ValueError:
         return ops
-    for words in split_simple(tokens):
-        simple(words, ctx, ops, depth)
+    cur, sep, prev, stack = [], ";", None, []
+    for tok in tokens + [";"]:
+        if not is_separator(tok):
+            cur.append(tok)
+            continue
+        if cur:
+            for text in fed_texts(cur, sep, prev):
+                ops.extend(analyze(text, Ctx(ctx.cwd), depth + 1))
+            simple(cur, ctx, ops, depth)
+            prev = cur
+        cur = []
+        for ch in tok:  # a ( ... ) group is a subshell: a cd inside it does not reach what follows
+            if ch == "(":
+                stack.append(ctx.cwd)
+            elif ch == ")" and stack:
+                ctx.cwd = stack.pop()
+        sep = tok
     return ops
 
 
@@ -415,7 +546,7 @@ def strip_redirects(words, ctx, ops):
             nxt = words[i + 1] if i + 1 < len(words) else None
             if nxt is not None and w in OUT_REDIRECTS and not (w == ">&" and (nxt.isdigit() or nxt == "-")):
                 target = clean(nxt)
-                if target not in NO_FILE:
+                if not is_no_file(target):
                     add(ops, ctx, "redirect", "write", [target])
             i += 2
         else:
@@ -439,8 +570,8 @@ def simple(words, ctx, ops, depth, unknown=False):
         return
     words = strip_redirects(words, ctx, ops)
     words = [clean(w) if w != SEMI else w for w in words]
-    while words and (ENV_RE.match(words[0]) or words[0] in KEYWORDS):
-        words = words[1:]
+    while words and (ENV_RE.match(words[0]) or words[0] in KEYWORDS or words[0] == "function"):
+        words = words[2:] if words[0] == "function" else words[1:]  # function NAME { ... }
     if not words:
         return
     name, args = cmdname(words[0]), words[1:]
@@ -460,14 +591,25 @@ def simple(words, ctx, ops, depth, unknown=False):
         return simple(skip_options(args), ctx, ops, depth + 1, unknown)
     if name in ("nohup", "time", "exec", "builtin", "nice"):
         return simple(skip_options(args, {"-n"}), ctx, ops, depth + 1, unknown)
-    if name == "timeout":
+    if name in ("timeout", "gtimeout"):
         rest = skip_options(args, {"-s", "-k", "--signal", "--kill-after"})
         return simple(rest[1:], ctx, ops, depth + 1, unknown)
+    if name == "stdbuf":
+        return simple(skip_options(args, {"-i", "-o", "-e", "--input", "--output", "--error"}), ctx, ops, depth + 1, unknown)
+    if name == "caffeinate":
+        return simple(skip_options(args, {"-t", "-w"}), ctx, ops, depth + 1, unknown)
+    if name == "arch":
+        return simple(skip_options(args, {"-arch", "-e", "-d"}), ctx, ops, depth + 1, unknown)
+    if name == "trap":
+        if args and not args[0].startswith("-"):
+            ops.extend(analyze(args[0], Ctx(ctx.cwd), depth + 1))
+        return
     if name == "eval":
         ops.extend(analyze(" ".join(args), ctx, depth + 1))
         return
     if name == "xargs":
-        rest = skip_options(args, {"-n", "-I", "-L", "-P", "-d", "-E", "-s", "-a", "-J", "-R", "-S", "-l"})
+        rest = skip_options(args, {"-n", "-I", "-L", "-P", "-d", "-E", "-s", "-a", "-J", "-R", "-S", "-l",
+                                    "--max-args", "--max-procs", "--delimiter", "--max-chars", "--arg-file", "--process-slot-var"})
         return simple(rest, ctx, ops, depth + 1, True)
     if name in SHELLS:
         for i, a in enumerate(args):
@@ -500,7 +642,13 @@ def h_last_arg(name, args, ctx, ops, unknown):
         sources = pos
     else:
         dest, sources = pos[-1:], pos[:-1]
-    add(ops, ctx, name, "write", dest, False, unknown)
+    inside_dir = []  # copying into a folder: each file lands under its own name there
+    for d in dest:
+        dr = resolve(d, ctx.cwd)
+        if d.endswith(("/", "\\")) or (dr and os.path.isdir(dr)):
+            inside_dir += [d.rstrip("/\\") + "/" + b for b in (re.split(r"[\\/]", s.rstrip("/\\"))[-1] for s in sources)
+                           if b not in ("", ".", "..")]
+    add(ops, ctx, name, "write", dest + inside_dir, False, unknown)
     if name == "mv":
         add(ops, ctx, name, "delete", sources, False, unknown)
 
@@ -648,9 +796,13 @@ def changes_files(ops, offered=()):
     return False
 
 
-def protected_files():
+def protected_files(root=None):
+    """Lower-case, forward-slash paths of the files only the person may change."""
     cd = norm(claude_dir())
-    return [os.path.join(cd, n) for n in ("safety-allow.txt", "settings.json", "settings.local.json")]
+    out = [os.path.join(cd, n) for n in ("safety-allow.txt", "settings.json", "settings.local.json")]
+    if root:
+        out += [os.path.join(root, ".claude", n) for n in ("settings.json", "settings.local.json")]
+    return [p.replace("\\", "/").lower() for p in out]
 
 
 def offered_folders():
@@ -664,9 +816,11 @@ def offered_folders():
 
 def decide_bash(ops, root, extra=()):
     allowed, temp = allowed_places(root) + list(extra), temp_places()
-    protect = protected_files()
+    protect = protected_files(root)
     for op in ops:
-        if op.kind in ("write", "delete") and any(t in protect for t in op.targets if t):
+        if op.kind in ("write", "delete") and (
+                any(t.replace("\\", "/").lower() in protect for t in op.targets if t)
+                or any(fnmatch.fnmatchcase(p, pat) for pat in op.patterns for p in protect)):
             return "deny", ("SAFETY GUARD - stopped '" + op.name + "': this file holds the safety settings and only the person "
                             "can change it. Tell the person what you wanted changed and ask them to edit it themselves.")
     for op in ops:
@@ -735,7 +889,7 @@ def main(stdin_text):
 def existing_candidates():
     out = []
     for c in CANDIDATES:
-        p = expand_user(c)
+        p = os.path.normpath(expand_user(c))
         if os.path.isdir(p) and not any(os.path.samefile(p, q) for q in out):
             out.append(p)
     return out[:5]

@@ -17,8 +17,8 @@ DONE_STATUS = {"done", "closed", "cancelled", "blocked", "waiting"}
 NOT_DONE_STR = {"", "false", "no", "none", "null", "0"}
 MAX_BYTES = 2_000_000
 MAX_FILES = 2000
-HEAD = ("[DUE] Promised items due today or overdue (from Due markers). For each, in this session: do it, or re-date it "
-        "with a reason and add or raise (bumped N), or drop it with a reason. Remove the marker when an item is finished.")
+HEAD = ("[DUE] Due today or overdue. Each: do it, or re-date with a reason and add or raise (bumped N), or drop with a reason. "
+        "Remove the marker when finished.")
 INTRO = ('[DUE MARKERS] New: promised follow-ups now carry "Due YYYY-MM-DD" so session start lists them when due. '
          'Tell the user in one plain line that they can say "sort deadlines" to mark this project\'s open deadlines.')
 
@@ -227,8 +227,8 @@ def format_due(items, today, max_items=10, per_item=150, limit=1500):
 
 
 NEXT_HEAD = "[NEXT] Undated open items by priority (tags [severity \u00b7 who \u00b7 size])."
-NEXT_CLAUDE = "Next for Claude (when there is no other task, do the top one unless you state a reason to wait):"
-NEXT_YOU = "Needs you (ask the user about these together, in one batched question):"
+NEXT_CLAUDE = "Next for Claude (with no other task, do the top one unless you state a reason to wait):"
+NEXT_YOU = "Needs you (ask the user about these in one batched question):"
 
 
 def _cut(s, n):

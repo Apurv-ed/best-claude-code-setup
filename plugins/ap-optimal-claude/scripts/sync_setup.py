@@ -14,7 +14,8 @@ Steps:
 3. Duplicate skills: back up and remove ~/.claude/skills/<name> only when it is a byte-exact
    copy of a skill some installer version wrote (the plugin ships the current version).
 4. Settings: add any missing baseline deny rule (add-only), keep the scalar MANAGED keys,
-   ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected), and
+   ONCE switch defaultMode bypassPermissions -> auto (a later choice is respected), ONCE set
+   blockWritesOutsideWorkingDirectories and disableBypassPermissionsMode when absent, and
    replace the old installer's Windows notification command (byte-exact match only), which
    Git Bash broke by expanding its "$null", and its Mac one, which opened Terminal even in
    desktop app sessions. Keep auto-update on for this setup's marketplace:
@@ -57,6 +58,13 @@ MARKETPLACE_REPO = "Apurv-ed/best-claude-code-setup"
 OWN_MARKETPLACE = "apurv-ed"
 OWN_MARKETPLACE_REPO = "Apurv-ed/best-claude-code-setup"
 PLUGIN_NAME = "ap-optimal-claude"
+# One-time safety settings (key in migrations.json, settings key, value, note for the person).
+SAFETY_MIGRATIONS = (
+    ("block_outside_writes", "blockWritesOutsideWorkingDirectories", True,
+     "Claude's file edits are now limited to your project folders (undo: set permissions.blockWritesOutsideWorkingDirectories to false in settings.json)"),
+    ("bypass_off", "disableBypassPermissionsMode", "disable",
+     "the 'bypass permissions' mode is now switched off for safety (undo: delete permissions.disableBypassPermissionsMode in settings.json)"),
+)
 # Plugins update even where Claude Code's own updater is switched off (DISABLE_AUTOUPDATER and
 # similar); added only when the person has not set it themselves.
 MANAGED_ENV = {"FORCE_AUTOUPDATE_PLUGINS": "1"}
@@ -324,6 +332,22 @@ def sync_settings(root: Path, claude_dir: Path, data_dir: Path, notes: list) -> 
             changed = True
             notes.append("permission mode switched once from 'bypass permissions' to 'auto' (safety check on); you can change it back with /config")
         done["bypass_to_auto"] = time.strftime("%Y-%m-%d")
+        data_dir.mkdir(parents=True, exist_ok=True)
+        marker.write_text(json.dumps(done))
+    # Safety set (ADR-0105): each is set ONCE and only when the key is absent, so a person who
+    # later turns it off (or already chose a value) stays off.
+    marked = False
+    for key, setting, value, note in SAFETY_MIGRATIONS:
+        if not done.get(key):
+            # bypass_off: someone already in bypass mode is not locked out of it; just mark it done
+            locked_out = key == "bypass_off" and perms.get("defaultMode") == "bypassPermissions"
+            if setting not in perms and not locked_out:
+                perms[setting] = value
+                changed = True
+                notes.append(note)
+            done[key] = time.strftime("%Y-%m-%d")
+            marked = True
+    if marked:
         data_dir.mkdir(parents=True, exist_ok=True)
         marker.write_text(json.dumps(done))
     if not done.get("subagent_model_default"):

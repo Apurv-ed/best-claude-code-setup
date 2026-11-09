@@ -68,7 +68,7 @@ Or view it online: [apurv.org/best-claude-code-settings/claude-code-best-practic
 |---------|-------------|--------|
 | MAX_THINKING_TOKENS=10000 | Caps thinking tokens on older models (current models use the effort level instead) | Lower thinking cost on those models |
 | Context Efficiency rules | Stops Claude from echoing, narrating, re-reading | Major output reduction |
-| Safety deny rules | Blocks recursive deletes, force pushes, and reading .env files | Protects your work and secrets |
+| Safety deny rules and guard | Blocks recursive deletes, force pushes and reading .env files; keeps Claude's changes inside your project folders and out of your personal folders; bypass mode off | Protects your work and secrets |
 
 ## Recommended Plugins
 

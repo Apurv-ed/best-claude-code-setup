@@ -12,6 +12,26 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     for d in "$CWD"/*/.git; do [ -e "$d" ] && HOLDS_PROJECTS=1 && break; done
 fi
 
+# Git from the start (ADR-0105): a folder strictly inside the person's projects folder that has no
+# git of its own gets a local `git init` (no remote, no GitHub). Fails silent; the notes below then
+# see a repo, so [NO GIT] does not also fire.
+CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/ap-optimal-claude}"
+PROJECTS_FOLDER=""
+[ -r "$CLAUDE_DIR/projects-folder.txt" ] && PROJECTS_FOLDER=$(head -n 1 "$CLAUDE_DIR/projects-folder.txt" 2>/dev/null | tr -d '\r')
+PROJECTS_FOLDER="${PROJECTS_FOLDER%/}"
+# Compare real paths, so a symlinked projects folder (or a symlinked cwd) still matches.
+PROJECTS_REAL=""
+[ -n "$PROJECTS_FOLDER" ] && PROJECTS_REAL=$(cd "$PROJECTS_FOLDER" 2>/dev/null && pwd -P)
+GIT_INIT_NOTE=""
+if [ -n "$PROJECTS_FOLDER" ] && [ -z "$HOLDS_PROJECTS" ] && { [[ "$CWD" == "$PROJECTS_FOLDER"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_FOLDER"/* ]] \
+        || { [ -n "$PROJECTS_REAL" ] && { [[ "$CWD" == "$PROJECTS_REAL"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_REAL"/* ]]; }; }; } \
+        && ! git rev-parse --git-dir > /dev/null 2>&1; then
+    if git init -q > /dev/null 2>&1; then
+        GIT_INIT_NOTE="[GIT STARTED] This folder ($(basename "$CWD")) had no git, so git was started here (local only, no GitHub). Tell the user in one plain line that a first commit is worth making."
+    fi
+fi
+
 # No git yet: never create a repo here (gh would use whatever account is signed in). Measured
 # (no git), at most once a week per folder; Claude asks first, including which GitHub account.
 if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ] && ! git rev-parse --git-dir > /dev/null 2>&1; then
@@ -63,6 +83,18 @@ if [ -z "$PYTHON" ]; then
     # Without Python the JSON cannot be built safely, so this one fixed message is written by hand.
     printf '%s' '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "[SETUP] Python 3 was not found, so the setup\u0027s automatic helpers (session context, self-review, setup updates) are off. Tell the user this in one line and offer to install Python 3 for them (Windows: winget install Python.Python.3.12; Mac: xcode-select --install)."}}'
     exit 0
+fi
+
+# Projects folder (ADR-0105): once per person, ask where projects are kept. The folder guard
+# (scripts/safety_guard.py) points here when it refuses to change files in Documents or Downloads.
+FOLDER_NOTE=""
+SAFETY="${CLAUDE_PLUGIN_ROOT}/scripts/safety_guard.py"
+if [ ! -f "$CLAUDE_DIR/projects-folder.txt" ] && [ ! -e "$PLUGIN_DATA/projects-folder-asked" ] && [ -r "$SAFETY" ] \
+        && mkdir -p "$PLUGIN_DATA" 2>/dev/null && : > "$PLUGIN_DATA/projects-folder-asked" 2>/dev/null; then
+    CANDS=$("$PYTHON" "$SAFETY" --candidates 2>/dev/null | tr '\n' ';' | sed 's/;$//; s/;/; /g')
+    FOLDER_NOTE="[PROJECTS FOLDER] Ask the user once, in plain words, which folder to keep their projects in (Claude does not change files in the home folder, Documents, Downloads or Desktop themselves, only in a project folder). Recommend ~/Claude Projects"
+    [ -n "$CANDS" ] && FOLDER_NOTE="$FOLDER_NOTE; folders that already exist and could be used instead: $CANDS"
+    FOLDER_NOTE="$FOLDER_NOTE. When they answer, run: \"$PYTHON\" \"$SAFETY\" --set-folder \"<their folder>\" and tell them to start Claude from a project folder inside it. Do not ask again."
 fi
 
 # Project context (STATUS.md first, then a fresh handoff, then legacy context/ files),
@@ -125,6 +157,8 @@ fi
 # Append instruction Claude will actually see (additionalContext, not systemMessage)
 STARTUP_MSG=$'\n[SESSION START]'
 [ -n "$NO_GIT_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $NO_GIT_NOTE"
+[ -n "$GIT_INIT_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $GIT_INIT_NOTE"
+[ -n "$FOLDER_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $FOLDER_NOTE"
 [ -n "$LESSONS_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $LESSONS_NOTE"
 [ -n "$DUE_INTRO_NOTE" ] && STARTUP_MSG="$STARTUP_MSG $DUE_INTRO_NOTE"
 CONTEXT="$CONTEXT$STARTUP_MSG"

@@ -69,6 +69,11 @@ def get_settings():
             # still bind in every mode (re-verified live in auto mode 2026-10-01).
             # Where auto mode is unavailable, Claude Code starts in Manual mode.
             "defaultMode": "auto",
+            # New installs only (plugin sync_setup.py does the same once for existing ones, and
+            # merge_settings never overwrites a person's value): file edits stay inside the
+            # project folders, and bypass-permissions mode cannot be switched on.
+            "blockWritesOutsideWorkingDirectories": True,
+            "disableBypassPermissionsMode": "disable",
             # The deny list replaces the old cc-wrapper blocklist, which used
             # --disallowedTools and could be shadowed.
             "deny": [
@@ -78,6 +83,18 @@ def get_settings():
                 "Bash(git push --force:*)",
                 "Bash(git push -f:*)",
                 "Bash(git reset --hard:*)",
+                "Bash(rm -r:*)",
+                "Bash(rm -R:*)",
+                "Bash(rm --recursive:*)",
+                "Bash(rm -f -r:*)",
+                "Bash(rm -r -f:*)",
+                "Bash(rm -rfv:*)",
+                "Bash(find * -delete*)",
+                "Bash(git clean -f*)",
+                "Bash(shred:*)",
+                "Bash(mkfs:*)",
+                "Bash(diskutil erase*)",
+                "Bash(Remove-Item * -Recurse*)",
                 "Read(./.env)",
                 "Read(./.env.*)",
                 "Read(**/.env)",
@@ -227,6 +244,11 @@ def merge_settings(existing, managed):
     mperms = managed.get("permissions", {})
     if "defaultMode" in mperms:
         perms["defaultMode"] = mperms["defaultMode"]
+    for key in ("blockWritesOutsideWorkingDirectories", "disableBypassPermissionsMode"):
+        # Brand-new install only (no settings.json yet). A re-run never re-adds them: existing
+        # installs get them once through the plugin's sync_setup migrations (ADR-0105).
+        if not existing and key in mperms and key not in perms:
+            perms[key] = mperms[key]
     deny = list(perms.get("deny", []))
     for rule in mperms.get("deny", []):
         if rule not in deny:
@@ -580,6 +602,58 @@ def find_git_bash():
     return next((c for c in candidates if c and os.path.isfile(c)), None)
 
 
+# Same list as CANDIDATES in plugins/ap-optimal-claude/scripts/safety_guard.py (the installer cannot
+# import the plugin at this point; scripts/test_safety_guard.py checks the two are equal).
+PROJECT_FOLDER_CANDIDATES = ["~/Claude Projects", "~/Projects", "~/projects", "~/Code", "~/code", "~/dev",
+                             "~/Documents/dev", "~/Documents/Projects"]
+PROJECT_FOLDER_DEFAULT = "~/Claude Projects"
+
+
+def choose_projects_folder(input_fn=input, interactive=None):
+    """Ask once, at the keyboard, where projects are kept; save it to ~/.claude/projects-folder.txt.
+
+    Skipped without a keyboard, when the file exists, or on EOF. Never raises: the install goes on.
+    The file is what the plugin's safety guard and session start read (ADR-0105)."""
+    try:
+        target = os.path.join(CLAUDE_DIR, "projects-folder.txt")
+        if os.path.exists(target):
+            return None
+        if interactive is None:
+            interactive = sys.stdin.isatty()
+        if not interactive:
+            return None
+        found = []
+        for c in PROJECT_FOLDER_CANDIDATES:
+            p = os.path.expanduser(c)
+            if os.path.isdir(p) and not any(os.path.samefile(p, q) for q in found):
+                found.append(p)
+        found = found[:5]
+        default = os.path.expanduser(PROJECT_FOLDER_DEFAULT)
+        print("\n   Where should Claude keep your projects? (It will not change files directly in your")
+        print("   home, Documents, Downloads or Desktop folders.)")
+        for i, p in enumerate(found, 1):
+            print(f"     {i}) {p}")
+        answer = input_fn(f"   Press Enter for {PROJECT_FOLDER_DEFAULT}"
+                          + (" or type a number: " if found else ": ")).strip()
+        chosen = default
+        if answer.isdigit() and 1 <= int(answer) <= len(found):
+            chosen = found[int(answer) - 1]
+        guarded = [HOME] + [os.path.join(HOME, n) for n in ("Downloads", "Desktop", "Documents")]
+        real = os.path.realpath(chosen)
+        if real in [os.path.realpath(g) for g in guarded] or not real.startswith(os.path.realpath(HOME) + os.sep):
+            chosen = default
+        os.makedirs(chosen, exist_ok=True)
+        os.makedirs(CLAUDE_DIR, exist_ok=True)
+        with open(target, "w", encoding="utf-8") as f:
+            f.write(chosen + "\n")
+        print(f"  [OK] Projects folder: {chosen}")
+        return chosen
+    except (EOFError, KeyboardInterrupt, OSError):
+        return None
+    except Exception:
+        return None
+
+
 def setup():
     plat_name = "Mac" if IS_MAC else "Windows" if IS_WINDOWS else "Linux"
     print(f"\nClaude Code Setup - {plat_name}")
@@ -672,6 +746,9 @@ def setup():
     print("\n8. Applying team rules and migrations from the plugin...")
     run_plugin_sync()
 
+    print("\n8b. Choosing your projects folder...")
+    choose_projects_folder()
+
     # Self-copy: save installer to ~/.claude/claude-setup.py so the update
     # notification (injected by the session-start hook) always has a valid path
     # to give the user, regardless of where they originally ran this from.
@@ -728,7 +805,8 @@ def setup():
         print("  powershell: Install-Module -Name BurntToast")
 
     print("\n--- Safety guardrails (permissions.deny in settings.json) ---")
-    print("  rm -rf / rm -fr / sudo rm   (recursive deletion)")
+    print("  rm -r / rm -rf / sudo rm / find -delete / git clean -f / shred   (recursive deletion)")
+    print("  File edits stay inside your project folders; bypass-permissions mode is switched off.")
     print("  git push --force / -f       (overwriting remote history)")
     print("  Read .env / .env.*          (secrets stay out of context)")
     print("  These rules block the command as written in every permission mode.")

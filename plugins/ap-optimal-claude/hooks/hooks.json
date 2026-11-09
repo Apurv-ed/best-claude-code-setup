@@ -44,6 +44,17 @@
             "statusMessage": "Checking for keys..."
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/config-protection.sh",
+            "timeout": 10,
+            "statusMessage": "Checking config files..."
+          }
+        ]
       }
     ],
     "PostToolUse": [

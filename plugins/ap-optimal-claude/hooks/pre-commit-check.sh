@@ -15,7 +15,7 @@ try:
     cmd = json.load(sys.stdin).get("tool_input", {}).get("command", "")
 except Exception:
     sys.exit(0)
-if not re.search(r"\bgit(\s+-[cC]\s+\S+)*\s+commit\b", cmd):
+if not re.search(r"\bgit(\s+(-[cC]\s+\S+|--no-pager|--no-optional-locks|-P|--(git-dir|work-tree)(=|\s+)\S+))*\s+commit(?![-\w])", cmd):
     sys.exit(0)
 
 def run(args):

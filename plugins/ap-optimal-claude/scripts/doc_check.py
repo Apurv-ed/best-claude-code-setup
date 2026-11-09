@@ -34,7 +34,7 @@ FROZEN_DIRS = ("docs/research", "docs/transcriptions", "docs/archive", "docs/pla
 HISTORY_FILES = ("CHANGELOG.md",)  # broken links here are warnings only
 KNOWN_DOCS = {"STATUS.md", "README.md", "CHANGELOG.md", "CLAUDE.md", "CLAUDE.local.md", "AGENTS.md",
               "METRICS.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", "CODE_OF_CONDUCT.md",
-              "LICENSE.md", "docs/SESSION_HANDOFF.md", "docs/SESSION_MESSAGES.md", "docs/decisions.md"}
+              "LICENSE.md", "docs/SESSION_HANDOFF.md", "docs/SESSION_MESSAGES.md", "docs/decisions.md", "docs/README.md"}
 MADR_NAME = re.compile(r"^\d{4}-[a-z0-9-]+\.md$")
 STATUS_LINE = re.compile(r"^\s*(?:[*-]\s*)?status:\s*(.*?)\s*$", re.I | re.M)
 PLACEHOLDER_GOAL = "[describe the end goal here]"
@@ -96,7 +96,7 @@ def madr_findings(root):
             warns.append(f"docs/decisions/: duplicate number {num}: {', '.join(names)}")
     for rel, st in sorted(statuses.items()):
         if "superseded by" in st.lower():
-            targets = re.findall(r"(?<!\d)(\d{4})(?!\d)", st)
+            targets = re.findall(r"(?<!\d)(\d{4})(?!\d)", re.sub(r"\d{4}-\d{2}(-\d{2})?", "", st))  # ignore dates
             if not targets or not all(t in numbers for t in targets):
                 warns.append(f"{rel}: 'superseded by' must name an existing decision number (e.g. ADR-0042); got '{st}'")
     return warns

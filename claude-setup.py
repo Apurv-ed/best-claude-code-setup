@@ -622,11 +622,11 @@ def choose_projects_folder(input_fn=input, interactive=None):
             return None
         found = []
         for c in PROJECT_FOLDER_CANDIDATES:
-            p = os.path.expanduser(c)
+            p = os.path.normpath(os.path.expanduser(c))
             if os.path.isdir(p) and not any(os.path.samefile(p, q) for q in found):
                 found.append(p)
         found = found[:5]
-        default = os.path.expanduser(PROJECT_FOLDER_DEFAULT)
+        default = os.path.normpath(os.path.expanduser(PROJECT_FOLDER_DEFAULT))
         print("\n   Where should Claude keep your projects? (It will not change files directly in your")
         print("   home, Documents, Downloads or Desktop folders.)")
         for i, p in enumerate(found, 1):

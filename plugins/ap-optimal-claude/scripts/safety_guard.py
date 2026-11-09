@@ -845,6 +845,23 @@ def decide_bash(ops, root, extra=()):
     return None, ""
 
 
+def decide_file_tool(ti, cwd, root):
+    """Write, Edit, MultiEdit, NotebookEdit: a file outside the allowed places asks, so the check does not
+    depend on Claude Code's own blockWritesOutsideWorkingDirectories setting."""
+    path = ti.get("file_path") or ti.get("notebook_path")
+    if not isinstance(path, str) or not path.strip():
+        return ""
+    path = expand_user(path.strip())
+    if os.name == "nt" and re.match(r"^/[a-zA-Z](/|$)", path):
+        path = path[1].upper() + ":/" + path[3:]  # Git Bash writes C:\\x as /c/x
+    base = cwd if isinstance(cwd, str) and cwd else root
+    target = norm(path if os.path.isabs(path) else os.path.join(base, path))
+    if in_any(target, allowed_places(root)):
+        return ""
+    return verdict(OUTSIDE_WRITE_DECISION, f"SAFETY GUARD - this edit would write to {target}, outside this project. "
+                                           "Check with the person before going on.")
+
+
 def folder_reason(root):
     return (f"SAFETY GUARD - this folder ({os.path.basename(root) or root}) holds personal files, so Claude does not change "
             f"anything here. Offer to make a project folder inside {projects_folder()} and tell the person to restart "
@@ -871,7 +888,9 @@ def main(stdin_text):
         root = norm(root)
         guarded = is_guarded(root)
         if tool in WRITE_TOOLS:
-            return verdict("deny", folder_reason(root)) if guarded else ""
+            if guarded:
+                return verdict("deny", folder_reason(root))
+            return decide_file_tool(ti, cwd, root)
         if tool != "Bash" or not isinstance(ti.get("command"), str):
             return ""
         ops = analyze(ti["command"], Ctx(norm(cwd) if isinstance(cwd, str) and cwd else root))

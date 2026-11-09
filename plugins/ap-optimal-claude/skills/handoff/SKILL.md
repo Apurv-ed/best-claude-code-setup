@@ -7,7 +7,7 @@ description: Session handoff template. Use when the user types "handoff" or "han
 
 ## Determine the target project
 
-- If the user typed `handoff <name>` (e.g. `handoff my-app`), the target project is `~/Documents/dev/<name>/`.
+- If the user typed `handoff <name>` (e.g. `handoff my-app`), the target project is the folder `<name>` inside the person's projects folder (first line of `~/.claude/projects-folder.txt`; if there is none, `~/Documents/dev/<name>/`).
 - If the user just typed `handoff`, the target project is the current working directory.
 
 ## Gather context for the target project

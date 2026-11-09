@@ -23,10 +23,13 @@ PROJECTS_FOLDER="${PROJECTS_FOLDER%/}"
 # Compare real paths, so a symlinked projects folder (or a symlinked cwd) still matches.
 PROJECTS_REAL=""
 [ -n "$PROJECTS_FOLDER" ] && PROJECTS_REAL=$(cd "$PROJECTS_FOLDER" 2>/dev/null && pwd -P)
+IN_CHOSEN=""  # strictly inside the chosen projects folder
+if [ -n "$PROJECTS_FOLDER" ] && { [[ "$CWD" == "$PROJECTS_FOLDER"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_FOLDER"/* ]] \
+        || { [ -n "$PROJECTS_REAL" ] && { [[ "$CWD" == "$PROJECTS_REAL"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_REAL"/* ]]; }; }; }; then
+    IN_CHOSEN=1
+fi
 GIT_INIT_NOTE=""
-if [ -n "$PROJECTS_FOLDER" ] && [ -z "$HOLDS_PROJECTS" ] && { [[ "$CWD" == "$PROJECTS_FOLDER"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_FOLDER"/* ]] \
-        || { [ -n "$PROJECTS_REAL" ] && { [[ "$CWD" == "$PROJECTS_REAL"/* ]] || [[ "$(pwd -P 2>/dev/null)" == "$PROJECTS_REAL"/* ]]; }; }; } \
-        && ! git rev-parse --git-dir > /dev/null 2>&1; then
+if [ -n "$IN_CHOSEN" ] && [ -z "$HOLDS_PROJECTS" ] && ! git rev-parse --git-dir > /dev/null 2>&1; then
     if git init -q > /dev/null 2>&1; then
         GIT_INIT_NOTE="[GIT STARTED] $(basename "$CWD") had no git; started it here (local only). Tell the user in one line that a first commit is worth making."
     fi
@@ -43,11 +46,11 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ] && ! git rev-parse 
     fi
 fi
 
-# Online copy check - only in ~/Documents/dev/*: a repo with no remote lives on this computer
+# Online copy check - only in ~/Documents/dev/* or the chosen projects folder: a repo with no remote lives on this computer
 # alone. Measured (git has no remote), at most once a week per project (marker in the plugin's
 # data folder), and skipped when the folder has no git at all.
 ONLINE_NOTE=""
-if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$NO_GIT_NOTE" ] && git rev-parse --git-dir > /dev/null 2>&1 \
+if { [[ "$CWD" == "$HOME_DEV"/* ]] || [ -n "$IN_CHOSEN" ]; } && [ -z "$NO_GIT_NOTE" ] && git rev-parse --git-dir > /dev/null 2>&1 \
         && [ -z "$(git remote 2>/dev/null)" ] && [ "$(git config --get ap.localOnly 2>/dev/null)" != "true" ]; then
     TOP=$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD")  # the project, not a subfolder
     MARK_DIR="${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/ap-optimal-claude}/online-copy-noted"
@@ -59,8 +62,8 @@ if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$NO_GIT_NOTE" ] && git rev-parse --git
     fi
 fi
 
-# STATUS.md check - only in ~/Documents/dev/*
-if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ] && [ ! -f STATUS.md ]; then
+# STATUS.md check - only in ~/Documents/dev/* or the chosen projects folder
+if { [[ "$CWD" == "$HOME_DEV"/* ]] || [ -n "$IN_CHOSEN" ]; } && [ -z "$HOLDS_PROJECTS" ] && [ ! -f STATUS.md ]; then
     cat > STATUS.md << 'STATUSMD'
 # Project Status
 
@@ -147,7 +150,7 @@ LESSONS_NOTE=""
 
 # One-time note per project introducing Due markers (due_markers.py --intro writes its own marker file)
 DUE_INTRO_NOTE=""
-if [[ "$CWD" == "$HOME_DEV"/* ]] && [ -z "$HOLDS_PROJECTS" ]; then
+if { [[ "$CWD" == "$HOME_DEV"/* ]] || [ -n "$IN_CHOSEN" ]; } && [ -z "$HOLDS_PROJECTS" ]; then
     DUE_TOP=$(git rev-parse --show-toplevel 2>/dev/null)
     if [ -n "$DUE_TOP" ] && [ -f "$DUE_TOP/STATUS.md" ]; then
         DUE_INTRO_NOTE=$("$PYTHON" "${CLAUDE_PLUGIN_ROOT}/scripts/due_markers.py" --intro "${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/ap-optimal-claude}" "$DUE_TOP" 2>/dev/null)

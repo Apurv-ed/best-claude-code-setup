@@ -119,10 +119,9 @@ def get_settings():
         },
         "autoCompactWindow": 1000000,
         "skillListingBudgetFraction": 0.02,
-        # Opus for plan/think mode, Sonnet for execution - automatic smart routing.
-        # Team gets stronger reasoning when planning without paying Opus rates for everything.
-        # Default for NEW installs only: merge_settings keeps any model the user already chose.
-        "model": "opusplan",
+        # Sonnet: about half the price per step. opusplan restarted the prompt cache at every
+        # switch (ADR-0106). Default for NEW installs only: merge_settings keeps a person's model.
+        "model": "sonnet",
         # Pre-declare the team marketplace (autoUpdate on; the plugin's sync puts it
         # back every session because `claude plugin marketplace add` strips it) and
         # enable the plugin. The plugin also checks for a new version daily and
@@ -170,7 +169,6 @@ def get_settings():
             "command": "npx -y ccstatusline@2",
             "padding": 0
         }
-        # opusplan: Opus for plan/think mode, Sonnet for execution - see above.
     }
     if not shutil.which("npx"):
         settings.pop("statusLine")

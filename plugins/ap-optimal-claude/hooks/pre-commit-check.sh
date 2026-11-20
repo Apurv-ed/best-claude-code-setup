@@ -29,7 +29,10 @@ def cap(text):
     lines = text.splitlines()
     return "\n".join(lines[:MAX] + ([f"... {len(lines) - MAX} more"] if len(lines) > MAX else []))
 
-ctx = "=== Staged files ===\n" + cap(run(["git", "diff", "--staged", "--name-only"])) + \
-      "\n\n=== Git status ===\n" + cap(run(["git", "status", "--short"]))
+staged, status = run(["git", "diff", "--staged", "--name-only"]), run(["git", "status", "--short"])
+if not staged and not status:
+    sys.exit(0)  # both lists empty carry no information
+ctx = "=== Staged files ===\n" + cap(staged) + \
+      "\n\n=== Git status ===\n" + cap(status)
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": ctx}}))
 '

@@ -7,6 +7,8 @@ Keeps the shared setup from damaging a non-technical person's laptop (ADR-0105):
   B/C. Shell parser: finds what a Bash command writes or deletes (after unwrapping sudo,
      env, xargs, bash -c ...) and decides: recursive delete anywhere = deny (temp folders
      excepted), delete outside the allowed places = deny, write outside = OUTSIDE_WRITE_DECISION.
+Known limit: python, node, perl, ruby, osascript one-liners and similar code passed as a string
+     are not analysed (text matching on code is easy to bypass and would cause false asks).
 Standard library only. Silent unless it decides something. Any problem means no output.
 
 Other uses:  safety_guard.py --candidates          list existing project-folder candidates
@@ -631,7 +633,8 @@ def h_delete(name, args, ctx, ops, unknown):
 
 
 def h_write_all(name, args, ctx, ops, unknown):
-    skip = {"touch": {"-t", "-d", "-r", "--date", "--reference"}, "mkdir": {"-m", "--mode"}}.get(name, ())
+    skip = {"touch": {"-t", "-d", "-r", "--date", "--reference"}, "mkdir": {"-m", "--mode"},
+                                 "truncate": {"-s", "-r", "--size", "--reference"}}.get(name, ())
     add(ops, ctx, name, "write", positional(args, skip), False, unknown)
 
 
@@ -766,11 +769,23 @@ def h_git(name, args, ctx, ops, unknown):
             break
     if i < len(args) and args[i] == "clean" and has_flag(args[i + 1:], "f", ("--force",)):
         add(ops, ctx, "git clean", "delete", [ctx.cwd] if ctx.cwd else [], True, unknown)
+    sub, rest = (args[i], args[i + 1:]) if i < len(args) else ("", [])
+    whole_tree = any(a in (".", "./") for a in rest)
+    forced = has_flag(rest, "f", ("--force",))
+    risky = ((sub == "reset" and "--hard" in rest)
+             or (sub == "push" and (forced or any(a.startswith(("--force", "+")) for a in rest)))
+             or (sub == "checkout" and (whole_tree or forced))
+             or (sub == "restore" and whole_tree and not (("--staged" in rest or "-S" in rest) and "--worktree" not in rest))
+             or (sub == "switch" and (forced or "--discard-changes" in rest))
+             or (sub == "branch" and (has_flag(rest, "D") or
+                                      (has_flag(rest, "d", ("--delete",)) and forced))))
+    if risky:  # history or uncommitted work lost: ask the person, never deny
+        add(ops, ctx, "git " + sub, "ask", [], False, unknown)
 
 
 HANDLERS = {
     "rm": h_delete, "rmdir": h_delete, "unlink": h_delete, "shred": h_delete,
-    "tee": h_write_all, "touch": h_write_all, "mkdir": h_write_all,
+    "tee": h_write_all, "truncate": h_write_all, "touch": h_write_all, "mkdir": h_write_all,
     "mv": h_last_arg, "cp": h_last_arg, "rsync": h_last_arg, "install": h_last_arg, "ln": h_last_arg,
     "chmod": h_chmod, "chown": h_chmod, "chgrp": h_chmod,
     "sed": h_sed, "curl": h_curl, "wget": h_wget, "dd": h_dd, "unzip": h_unzip, "tar": h_tar,
@@ -842,6 +857,10 @@ def decide_bash(ops, root, extra=()):
             if bad:
                 return OUTSIDE_WRITE_DECISION, (f"SAFETY GUARD - '{op.name}' would write to {bad[0]}, outside this project. "
                                                 "Check with the person before going on.")
+    for op in ops:
+        if op.kind == "ask":
+            return "ask", (f"SAFETY GUARD - '{op.name}' can throw away work that cannot be brought back. "
+                           "Check with the person before going on.")
     return None, ""
 
 

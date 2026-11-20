@@ -65,11 +65,16 @@ def headings(text):
 
 
 def ignored_prefixes(root):
-    """Extra frozen paths from an optional .doc-check-ignore (one path prefix per line, # comments)."""
+    """Extra frozen paths from an optional .doc-check-ignore (one file or folder path per line, # comments)."""
     f = root / ".doc-check-ignore"
     if not f.exists():
         return ()
-    return tuple(l.strip().rstrip("/") + "/" for l in f.read_text().splitlines() if l.strip() and not l.startswith("#"))
+    return tuple(l.strip().rstrip("/") for l in f.read_text().splitlines() if l.strip() and not l.startswith("#"))
+
+
+def is_ignored(rel, ignored):
+    """A file entry matches exactly; a directory entry matches everything under it."""
+    return any(rel == e or rel.startswith(e + "/") for e in ignored)
 
 
 def madr_findings(root):
@@ -108,7 +113,7 @@ def unknown_docs(root, ignored):
     for p, rel in md_files(root):
         if rel.count("/") > (1 if rel.startswith("docs/") else 0):
             continue
-        if rel in KNOWN_DOCS or rel.startswith(FROZEN_DIRS + ignored):
+        if rel in KNOWN_DOCS or rel.startswith(FROZEN_DIRS) or is_ignored(rel, ignored):
             continue
         names.append(rel)
     if not names:
@@ -133,7 +138,7 @@ def tracked_files(root):
 def check(root, changed=None):
     errors, warns = [], []
     shared = tracked_files(root)
-    frozen = FROZEN_DIRS + ignored_prefixes(root)
+    ignored = ignored_prefixes(root)
     status = root / "STATUS.md"
     if not status.exists():
         errors.append("STATUS.md is missing (it is the home of the goal, current state and next steps)")
@@ -148,7 +153,7 @@ def check(root, changed=None):
             warns.append("STATUS.md: the End Goal is still the placeholder; ask the user for it")
 
     for p, rel in md_files(root):
-        if rel.startswith(frozen):
+        if rel.startswith(FROZEN_DIRS) or is_ignored(rel, ignored):
             continue
         text = p.read_text(encoding="utf-8", errors="ignore")
         hs = list(headings(text))

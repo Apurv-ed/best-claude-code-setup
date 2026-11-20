@@ -166,7 +166,7 @@ def get_settings():
         # every refresh, ~1 s of CPU each.
         "statusLine": {
             "type": "command",
-            "command": "npx -y ccstatusline@2",
+            "command": "npx -y ccstatusline@2.2.32",  # exact pin = sync_setup.BAR_VERSION (a test checks)
             "padding": 0
         }
     }
@@ -237,10 +237,11 @@ def merge_settings(existing, managed):
     if "model" in managed and "model" not in result:
         result["model"] = managed["model"]
 
-    # permissions: keep user keys (e.g. allow), enforce defaultMode, UNION the deny baseline
+    # permissions: keep user keys (e.g. allow), default defaultMode, UNION the deny baseline
     perms = dict(result.get("permissions", {}))
     mperms = managed.get("permissions", {})
-    if "defaultMode" in mperms:
+    # defaultMode: set when absent, or when it is the old unsafe bypassPermissions; never overwrite another choice
+    if "defaultMode" in mperms and perms.get("defaultMode", "bypassPermissions") == "bypassPermissions":
         perms["defaultMode"] = mperms["defaultMode"]
     for key in ("blockWritesOutsideWorkingDirectories", "disableBypassPermissionsMode"):
         # Brand-new install only (no settings.json yet). A re-run never re-adds them: existing

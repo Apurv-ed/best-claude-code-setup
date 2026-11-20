@@ -43,8 +43,9 @@ RULES_HEADER = ("<!-- Managed by the ap-optimal-claude plugin (v{version}): refr
                 "     Put personal rules in another file in this folder. -->\n# Claude Code Instructions (team rules)\n\n")
 RULES_VERSION = re.compile(r"ap-optimal-claude plugin \(v(\d+(?:\.\d+)*)\)")
 MIGRATION_MARKER = "migrations.json"
-DEFAULT_STATUSLINE = "npx -y ccstatusline@2"  # what claude-setup.py installs
 BAR_VERSION = "2.2.32"  # exact pin: a plugin release that changes it reinstalls the bar
+DEFAULT_STATUSLINE = f"npx -y ccstatusline@{BAR_VERSION}"  # what claude-setup.py installs
+LEGACY_STATUSLINES = ("npx -y ccstatusline@2",)  # older installs: still recognised, moved to the pinned bar
 BAR_DIR = "ccstatusline"  # under the claude dir, so no global npm write or sudo is needed
 BAR_SCRIPT = ("node_modules", "ccstatusline", "dist", "ccstatusline.js")
 BAR_RETRY_SECONDS = 86400
@@ -415,12 +416,12 @@ def setup_statusline_kind(command, meter: Path, script: Path):
     """'npx' or 'direct' when command is one of the forms this sync writes, else None.
 
     Exact forms only, so a personal status line that reuses the meter is never touched."""
-    if command == DEFAULT_STATUSLINE:
+    if command == DEFAULT_STATUSLINE or command in LEGACY_STATUSLINES:
         return "npx"
     if not isinstance(command, str):
         return None
     py, m = r'"[^"]+"', re.escape(f'"{meter}"')
-    npx = re.escape(DEFAULT_STATUSLINE)
+    npx = "(?:" + "|".join(re.escape(c) for c in (DEFAULT_STATUSLINE, *LEGACY_STATUSLINES)) + ")"
     if re.fullmatch(f'{py} {m} statusline (?:"{npx}"|\'{npx}\') \\|\\| {npx}', command):
         return "npx"
     direct = f'{py} {re.escape(chr(34) + str(script) + chr(34))}'
@@ -460,7 +461,7 @@ def sync_statusline(root: Path, claude_dir: Path, notes: list, data_dir: Path = 
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(s, indent=2) + "\n", encoding="utf-8")
     tmp.replace(path)
-    if old == DEFAULT_STATUSLINE:
+    if old == DEFAULT_STATUSLINE or old in LEGACY_STATUSLINES:
         notes.append("status bar now also lets Claude suggest a fresh start once a conversation passes 40% full or 250K tokens")
     if bar and kind == "npx":
         notes.append("status bar now runs an installed ccstatusline instead of npx (about 5x less CPU per refresh)")
